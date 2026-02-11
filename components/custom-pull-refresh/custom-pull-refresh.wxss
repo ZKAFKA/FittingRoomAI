@@ -1,0 +1,48 @@
+.custom-pull-refresh {
+  position: absolute;
+  top: 10rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.custom-pull-refresh-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx;
+}
+
+.custom-pull-refresh-icon {
+  width: 30rpx;
+  height: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-image {
+  width: 24rpx;
+  height: 24rpx;
+  transition: all 0.3s ease;
+}
+
+.custom-pull-refresh-icon.refreshing .refresh-image {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-pull-refresh-text {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 5rpx;
+}

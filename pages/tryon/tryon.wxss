@@ -1,0 +1,930 @@
+/* pages/tryon/tryon.wxss */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0F0F12 0%, #1A1A1E 100%);
+  padding: 20rpx;
+  padding-bottom: 120rpx;
+  box-sizing: border-box;
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.3);
+}
+
+.upload-section {
+  margin-bottom: 20rpx;
+}
+
+.upload-area {
+  width: 100%;
+  min-height: 400rpx;
+  border-radius: 12rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1A1A1E 0%, #0F0F12 100%);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(123, 97, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(123, 97, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.user-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.upload-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  filter: grayscale(0.3);
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.cloth-section {
+  margin-bottom: 20rpx;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  position: relative;
+  overflow: visible;
+}
+
+.category-nav {
+  height: 100rpx;
+  padding: 0 16rpx;
+  margin-bottom: 0;
+  background: rgba(15, 15, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  box-sizing: border-box;
+  left: 0;
+  right: 0;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.3), 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.category-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20rpx;
+  right: 20rpx;
+  height: 1rpx;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(123, 97, 255, 0.3) 20%, 
+    rgba(123, 97, 255, 0.8) 50%, 
+    rgba(123, 97, 255, 0.3) 80%, 
+    transparent 100%);
+  animation: breathing 5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes breathing {
+  0%, 100% {
+    opacity: 0.4;
+    box-shadow: 0 0 10rpx rgba(123, 97, 255, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20rpx rgba(123, 97, 255, 0.6);
+  }
+}
+
+.category-list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  padding-right: 16rpx;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 64rpx;
+  padding: 0 32rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: visible;
+}
+
+.category-item:last-child {
+  margin-right: 0;
+}
+
+.category-item.active {
+  background: transparent;
+  border-color: transparent;
+}
+
+.category-item:active {
+  transform: scale(0.95);
+}
+
+.category-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+  filter: grayscale(0.3);
+  transition: all 0.3s ease;
+}
+
+.category-item.active .category-icon {
+  filter: grayscale(0);
+}
+
+.category-text {
+  font-size: 28rpx;
+  color: #888888;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.category-item.active .category-text {
+  color: #7B61FF;
+  font-weight: 600;
+}
+
+/* 指示条 */
+.category-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3rpx;
+  background: #7B61FF;
+  border-radius: 2rpx;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10rpx rgba(123, 97, 255, 0.6);
+}
+
+.category-item.active::after {
+  width: 40rpx;
+}
+
+.waterfall-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8rpx;
+  padding: 8rpx 0;
+}
+
+.cloth-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  border: 2rpx solid transparent;
+  backdrop-filter: blur(10px);
+}
+
+.cloth-item.selected {
+  border-color: #7B61FF;
+  box-shadow: 0 0 20rpx rgba(123, 97, 255, 0.4);
+  background: rgba(123, 97, 255, 0.1);
+}
+
+.cloth-image {
+  width: 100%;
+  height: 220rpx;
+  object-fit: cover;
+  display: block;
+}
+
+.cloth-name {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8rpx;
+  font-weight: 500;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.cloth-item.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  grid-column: 1 / -1;
+}
+
+.empty-icon {
+  font-size: 60rpx;
+  margin-bottom: 16rpx;
+  filter: grayscale(0.3);
+}
+
+.empty-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.floating-action {
+  position: fixed;
+  bottom: 40rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 0 20rpx;
+}
+
+.start-tryon-btn {
+  width: 600rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #7B61FF 0%, #614DFF 100%);
+  color: white;
+  border: none;
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+  box-shadow: 0 8rpx 24rpx rgba(123, 97, 255, 0.5), 0 0 0 4rpx rgba(123, 97, 255, 0.8);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-tryon-btn:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+.start-tryon-btn:active {
+  transform: translateX(-50%) scale(0.95);
+  box-shadow: 0 4rpx 12rpx rgba(123, 97, 255, 0.4);
+}
+
+.btn-text {
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+}
+
+.result-section {
+  margin-bottom: 20rpx;
+}
+
+.result-area {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.result-image {
+  width: 100%;
+  max-height: 500rpx;
+  object-fit: contain;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.result-actions {
+  display: flex;
+  gap: 16rpx;
+  width: 100%;
+}
+
+.result-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #7B61FF 0%, #614DFF 100%);
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(123, 97, 255, 0.3);
+}
+
+.error {
+  background: rgba(255, 77, 79, 0.1);
+  border: 2rpx solid rgba(255, 77, 79, 0.3);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.error-text {
+  font-size: 24rpx;
+  color: rgba(255, 77, 79, 0.9);
+  margin-bottom: 16rpx;
+  text-align: center;
+}
+
+.error-btn {
+  background: linear-gradient(135deg, #7B61FF 0%, #614DFF 100%);
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 30rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(123, 97, 255, 0.3);
+}
+
+/* 引导浮层样式 */
+.guide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.guide-content {
+  width: 85vw;
+  background: linear-gradient(135deg, #1A1A1E 0%, #121212 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  max-height: 73vh;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.5);
+}
+
+.guide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 32rpx 0;
+  margin-bottom: 24rpx;
+}
+
+.guide-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.guide-close {
+  font-size: 40rpx;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 8rpx;
+}
+
+.guide-close:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.guide-body {
+  padding: 0 32rpx 32rpx;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.guide-example {
+  margin-bottom: 32rpx;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 16rpx;
+}
+
+.photo-container {
+  position: relative;
+  width: 100%;
+  height: 700rpx;
+  margin: 0 auto;
+  box-shadow: 0 0 15px rgba(123, 97, 255, 0.3);
+  border-radius: 16rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.example-image {
+  width: 100%;
+  height: 700rpx;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.image-loading text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.floating-requirements {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  z-index: 10;
+}
+
+.floating-requirement-item {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.requirement-check-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.floating-requirement-text {
+  display: block;
+  line-height: 1.2;
+}
+
+.guide-footer {
+  padding: 0 32rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.action-area {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8rpx;
+}
+
+.checkbox-icon {
+  width: 20rpx;
+  height: 20rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.checkbox-icon.checked {
+  background: #7B61FF;
+  border-color: #7B61FF;
+}
+
+.checkbox-check {
+  color: white;
+  font-size: 22rpx;
+  font-weight: bold;
+}
+
+.checkbox-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.guide-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #7B61FF 0%, #614DFF 100%);
+  color: white;
+  border: none;
+  padding: 24rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+  box-shadow: 0 4rpx 16rpx rgba(123, 97, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .photo-container {
+    max-width: 100%;
+  }
+  
+  .example-image {
+    max-height: 400rpx;
+  }
+  
+  .floating-requirement-item {
+    font-size: 20rpx;
+    padding: 6rpx 12rpx;
+  }
+  
+  .requirement-check-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .checkbox-label {
+    font-size: 24rpx;
+  }
+  
+  .upload-area {
+    min-height: 350rpx;
+  }
+  
+  .category-item {
+    width: 120rpx;
+    height: 120rpx;
+    padding: 12rpx;
+    margin-right: 12rpx;
+  }
+  
+  .category-icon {
+    font-size: 40rpx;
+    margin-bottom: 6rpx;
+  }
+  
+  .category-text {
+    font-size: 22rpx;
+  }
+  
+  .waterfall-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12rpx;
+  }
+  
+  .cloth-image {
+    height: 250rpx;
+  }
+  
+  .start-tryon-btn {
+    width: 500rpx;
+    height: 88rpx;
+    font-size: 28rpx;
+  }
+}
+
+@media (min-width: 768px) {
+  .photo-container {
+    max-width: 600rpx;
+  }
+  
+  .example-image {
+    max-height: 600rpx;
+  }
+  
+  .floating-requirement-item {
+    font-size: 24rpx;
+    padding: 10rpx 20rpx;
+  }
+  
+  .requirement-check-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .upload-area {
+    min-height: 450rpx;
+  }
+  
+  .category-item {
+    width: 160rpx;
+    height: 160rpx;
+    padding: 20rpx;
+    margin-right: 20rpx;
+  }
+  
+  .category-icon {
+    font-size: 56rpx;
+    margin-bottom: 10rpx;
+  }
+  
+  .category-text {
+    font-size: 26rpx;
+  }
+  
+  .waterfall-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20rpx;
+  }
+  
+  .cloth-image {
+    height: 350rpx;
+  }
+  
+  .start-tryon-btn {
+    width: 700rpx;
+    height: 104rpx;
+    font-size: 36rpx;
+  }
+}
+
+/* 新增样式 */
+
+/* 分割线 - 呼吸流动灯光效果 */
+.category-divider {
+  height: 2rpx;
+  background: linear-gradient(90deg, 
+    rgba(0, 0, 0, 0) 0%, 
+    rgba(0, 119, 255, 0.8) 25%, 
+    rgba(0, 255, 149, 0.8) 50%, 
+    rgba(255, 0, 80, 0.8) 75%, 
+    rgba(0, 0, 0, 0) 100%);
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.8) 50%, 
+    transparent 100%);
+  animation: breatheFlow 5s ease-in-out infinite;
+}
+
+@keyframes breatheFlow {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* Swiper样式 */
+.cloth-swiper {
+  width: 100%;
+  background: transparent;
+}
+
+.cloth-swiper .swiper-item {
+  width: 100%;
+  height: 100%;
+}
+
+/* 瀑布流滚动容器 */
+.waterfall-scroll {
+  width: 100%;
+  height: 100%;
+  padding: 10rpx 0 24rpx;
+}
+
+/* 选中状态的小紫点 */
+.category-dot {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 12rpx;
+  height: 12rpx;
+  background: #7B61FF;
+  border-radius: 50%;
+  box-shadow: 0 0 10rpx rgba(123, 97, 255, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* 空状态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12rpx;
+  margin: 24rpx 0;
+}
+
+.empty-state .empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+  filter: grayscale(0.3);
+}
+
+.empty-state .empty-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 响应式调整 */
+@media (max-width: 375px) {
+  .waterfall-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .cloth-image {
+    height: 200rpx;
+  }
+  
+  .category-item {
+    padding: 0 24rpx;
+    height: 56rpx;
+  }
+  
+  .category-icon {
+    font-size: 24rpx;
+    margin-right: 6rpx;
+  }
+  
+  .category-text {
+    font-size: 24rpx;
+  }
+  
+  .category-nav {
+    height: 80rpx;
+    padding: 0 12rpx;
+  }
+  
+  .category-list {
+    padding-right: 12rpx;
+  }
+}
+
+@media (min-width: 768px) {
+  .photo-container {
+    max-width: 600rpx;
+  }
+  
+  .example-image {
+    max-height: 600rpx;
+  }
+  
+  .floating-requirement-item {
+    font-size: 24rpx;
+    padding: 10rpx 20rpx;
+  }
+  
+  .requirement-check-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .upload-area {
+    min-height: 450rpx;
+  }
+  
+  .category-item {
+    padding: 0 32rpx;
+    height: 64rpx;
+  }
+  
+  .category-icon {
+    font-size: 28rpx;
+    margin-right: 8rpx;
+  }
+  
+  .category-text {
+    font-size: 28rpx;
+  }
+  
+  .waterfall-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20rpx;
+  }
+  
+  .cloth-image {
+    height: 350rpx;
+  }
+  
+  .start-tryon-btn {
+    width: 700rpx;
+    height: 104rpx;
+    font-size: 36rpx;
+  }
+  
+  .category-nav {
+    height: 100rpx;
+    padding: 0 24rpx;
+  }
+  
+  .category-list {
+    padding-right: 24rpx;
+  }
+}

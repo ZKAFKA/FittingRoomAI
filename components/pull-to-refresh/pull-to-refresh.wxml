@@ -1,0 +1,8 @@
+<view class="pull-to-refresh" style="height: {{refreshHeight}}px; transform: translateY({{translateY}}px); opacity: {{opacity}};">
+  <view class="pull-to-refresh-content">
+    <view class="pull-to-refresh-icon {{refreshing ? 'refreshing' : ''}}">
+      <view class="spinner"></view>
+    </view>
+    <text class="pull-to-refresh-text">{{refreshText}}</text>
+  </view>
+</view>

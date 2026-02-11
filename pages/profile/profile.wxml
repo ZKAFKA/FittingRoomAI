@@ -1,0 +1,106 @@
+<view class="page">
+  <!-- Header -->
+  <view class="header">
+    <view class="relative">
+      <view class="avatar-container">
+        <image class="avatar" src="{{userInfo.avatarUrl && userInfo.avatarUrl !== '' ? userInfo.avatarUrl : defaultAvatarUrl}}" mode="aspectFill"></image>
+      </view>
+      <view class="edit-avatar-btn" bindtap="showEditAvatar">
+        <text class="edit-icon">✏️</text>
+      </view>
+    </view>
+    <view class="user-info">
+      <view class="user-name">{{userInfo.nickName || '微信用户'}}</view>
+    </view>
+  </view>
+
+  <!-- Body Profile Section -->
+  <view class="body-profile-section">
+    <view class="body-profile-card">
+      <view class="profile-content">
+        <view class="profile-item">
+          <view class="profile-label">HEIGHT</view>
+          <view class="profile-value">{{userInfo.height || '173'}}<text class="unit">cm</text></view>
+        </view>
+        <view class="profile-divider"></view>
+        <view class="profile-item">
+          <view class="profile-label">WEIGHT</view>
+          <view class="profile-value">{{userInfo.weight || '60'}}<text class="unit">kg</text></view>
+        </view>
+        <view class="profile-divider"></view>
+        <view class="profile-item">
+          <view class="profile-label">GENDER</view>
+          <view class="profile-value">{{userInfo.gender || 'Female'}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Featured Grid -->
+  <view class="featured-grid">
+    <view class="featured-card wardrobe-card" bindtap="navigateToWardrobe">
+      <view class="card-gradient"></view>
+      <image class="card-image" src="cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/wardrobe.png" mode="aspectFill" />
+      <view class="card-content">
+        <text class="card-icon">👔</text>
+        <view class="card-info">
+          <text class="card-title">我的衣橱</text>
+          <text class="card-subtitle">24 件服装</text>
+        </view>
+      </view>
+    </view>
+    <view class="featured-card history-card" bindtap="navigateToHistory">
+      <view class="card-gradient primary-gradient"></view>
+      <image class="card-image" src="cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/history.png" mode="aspectFill" />
+      <view class="card-content">
+        <text class="card-icon">📊</text>
+        <view class="card-info">
+          <text class="card-title">试衣记录</text>
+          <text class="card-subtitle">128 次试衣</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Menu List -->
+  <view class="menu-section">
+    <view class="menu-list">
+      <view class="menu-item" bindtap="navigateToSettings">
+        <view class="menu-item-left">
+          <view class="menu-icon-bg">
+            <text class="menu-icon">⚙️</text>
+          </view>
+          <text class="menu-label">设置</text>
+        </view>
+        <view class="menu-chevron">›</view>
+      </view>
+      <view class="menu-item" bindtap="navigateToAbout">
+        <view class="menu-item-left">
+          <view class="menu-icon-bg">
+            <text class="menu-icon">ℹ️</text>
+          </view>
+          <text class="menu-label">关于我们</text>
+        </view>
+        <view class="menu-chevron">›</view>
+      </view>
+      <view class="menu-item" bindtap="navigateToFeedback">
+        <view class="menu-item-left">
+          <view class="menu-icon-bg">
+            <text class="menu-icon">💬</text>
+          </view>
+          <text class="menu-label">反馈建议</text>
+        </view>
+        <view class="menu-chevron">›</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 身高体重编辑组件 -->
+  <body-info-editor 
+    visible="{{showBodyInfoEditor}}" 
+    height="{{userInfo.height}}" 
+    weight="{{userInfo.weight}}" 
+    bind:confirm="handleBodyInfoConfirm" 
+    bind:cancel="handleBodyInfoCancel" 
+  />
+</view>

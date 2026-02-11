@@ -1,0 +1,240 @@
+<view class="container">
+  <!-- 引导浮层 -->
+  <view class="guide-overlay" wx:if="{{showGuideOverlay}}">
+    <view class="guide-content">
+      <view class="guide-header">
+        <text class="guide-title">示例图片</text>
+        <view class="guide-close" bindtap="closeGuideOverlay">✕</view>
+      </view>
+      <view class="guide-body">
+        <view class="guide-example">
+          <view class="photo-container">
+            <image class="example-image" src="{{exampleImageUrl}}" wx:if="{{exampleImageUrl}}" />
+            <view class="image-loading" wx:else>
+              <text>加载中...</text>
+            </view>
+            <view class="floating-requirements">
+              <view class="floating-requirement-item">
+                <image class="requirement-check-icon" src="/assets/icons/checkmark.png" />
+                <text class="floating-requirement-text">清晰正面照</text>
+              </view>
+              <view class="floating-requirement-item">
+                <image class="requirement-check-icon" src="/assets/icons/checkmark.png" />
+                <text class="floating-requirement-text">背景干净</text>
+              </view>
+              <view class="floating-requirement-item">
+                <image class="requirement-check-icon" src="/assets/icons/checkmark.png" />
+                <text class="floating-requirement-text">光线充足</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="guide-footer">
+        <view class="action-area">
+          <button class="guide-btn" bindtap="startUpload">我知道了，开始上传</button>
+        </view>
+        <view class="checkbox-wrapper" bindtap="toggleDontShowAgain">
+          <view class="checkbox-icon {{dontShowAgain ? 'checked' : ''}}">
+            <view class="checkbox-check" wx:if="{{dontShowAgain}}">✓</view>
+          </view>
+          <text class="checkbox-label">不再提示</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 上传图片区 -->
+  <view class="section upload-section">
+    <view class="upload-area" style="height: {{uploadAreaHeight}}rpx;" bindtap="chooseUserImage">
+      <image class="user-image" src="{{userImage}}" wx:if="{{userImage}}" />
+      <view class="upload-placeholder" wx:else>
+        <view class="upload-icon">📷</view>
+        <text class="upload-text">点击上传照片</text>
+        <text class="upload-hint">支持从相册选择或拍摄</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 选择服装区 -->
+  <view class="section cloth-section">
+  
+    <!-- 分割线 -->
+    <view class="category-divider"></view>
+
+    <!-- 分类导航 -->
+    <scroll-view class="category-nav" scroll-x scroll-into-view="{{scrollIntoViewId}}" scroll-with-animation>
+      <view class="category-list">
+        <view class="category-item {{activeCategory === 'upper' ? 'active' : ''}}" bindtap="selectCategory" data-category="upper" id="category-upper">
+          <text class="category-icon">👕</text>
+          <text class="category-text">上装</text>
+          <view class="category-dot" wx:if="{{selectedItems.upper}}"></view>
+        </view>
+        <view class="category-item {{activeCategory === 'inner' ? 'active' : ''}}" bindtap="selectCategory" data-category="inner" id="category-inner">
+          <text class="category-icon">👚</text>
+          <text class="category-text">内搭</text>
+          <view class="category-dot" wx:if="{{selectedItems.inner}}"></view>
+        </view>
+        <view class="category-item {{activeCategory === 'lower' ? 'active' : ''}}" bindtap="selectCategory" data-category="lower" id="category-lower">
+          <text class="category-icon">👖</text>
+          <text class="category-text">下装</text>
+          <view class="category-dot" wx:if="{{selectedItems.lower}}"></view>
+        </view>
+        <view class="category-item {{activeCategory === 'suit' ? 'active' : ''}}" bindtap="selectCategory" data-category="suit" id="category-suit">
+          <text class="category-icon">👔</text>
+          <text class="category-text">套装</text>
+          <view class="category-dot" wx:if="{{selectedItems.suit}}"></view>
+        </view>
+        <view class="category-item {{activeCategory === 'shoes' ? 'active' : ''}}" bindtap="selectCategory" data-category="shoes" id="category-shoes">
+          <text class="category-icon">👟</text>
+          <text class="category-text">鞋帽</text>
+          <view class="category-dot" wx:if="{{selectedItems.shoes}}"></view>
+        </view>
+        <view class="category-item {{activeCategory === 'accessories' ? 'active' : ''}}" bindtap="selectCategory" data-category="accessories" id="category-accessories">
+          <text class="category-icon">📿</text>
+          <text class="category-text">配饰</text>
+          <view class="category-dot" wx:if="{{selectedItems.accessories}}"></view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 滑动容器 -->
+    <swiper class="cloth-swiper" current="{{swiperCurrent}}" bindchange="handleSwiperChange" style="height: {{swiperHeight}}px;">
+      <swiper-item>
+        <!-- 上装 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="upper" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="upper">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加上装</text>
+            </view>
+            <view class="cloth-item {{selectedItems.upper && selectedItems.upper._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.upper}}" wx:key="_id" data-id="{{_id}}" data-category="upper" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.upper || categoryClothes.upper.length === 0}}">
+            <text class="empty-icon">👕</text>
+            <text class="empty-text">暂无上装</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+      <swiper-item>
+        <!-- 内搭 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="inner" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="inner">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加内搭</text>
+            </view>
+            <view class="cloth-item {{selectedItems.inner && selectedItems.inner._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.inner}}" wx:key="_id" data-id="{{_id}}" data-category="inner" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.inner || categoryClothes.inner.length === 0}}">
+            <text class="empty-icon">👚</text>
+            <text class="empty-text">暂无内搭</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+      <swiper-item>
+        <!-- 下装 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="lower" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="lower">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加下装</text>
+            </view>
+            <view class="cloth-item {{selectedItems.lower && selectedItems.lower._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.lower}}" wx:key="_id" data-id="{{_id}}" data-category="lower" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.lower || categoryClothes.lower.length === 0}}">
+            <text class="empty-icon">👖</text>
+            <text class="empty-text">暂无下装</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+      <swiper-item>
+        <!-- 套装 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="suit" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="suit">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加套装</text>
+            </view>
+            <view class="cloth-item {{selectedItems.suit && selectedItems.suit._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.suit}}" wx:key="_id" data-id="{{_id}}" data-category="suit" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.suit || categoryClothes.suit.length === 0}}">
+            <text class="empty-icon">👔</text>
+            <text class="empty-text">暂无套装</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+      <swiper-item>
+        <!-- 鞋帽 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="shoes" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="shoes">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加鞋帽</text>
+            </view>
+            <view class="cloth-item {{selectedItems.shoes && selectedItems.shoes._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.shoes}}" wx:key="_id" data-id="{{_id}}" data-category="shoes" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.shoes || categoryClothes.shoes.length === 0}}">
+            <text class="empty-icon">👟</text>
+            <text class="empty-text">暂无鞋帽</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+      <swiper-item>
+        <!-- 配饰 -->
+        <scroll-view class="waterfall-scroll" bindscroll="handleScroll" data-category="accessories" scroll-y>
+          <view class="waterfall-grid">
+            <view class="cloth-item add-cloth-item" bindtap="handleAddCloth" data-category="accessories">
+              <view class="add-cloth-icon">+</view>
+              <text class="add-cloth-text">添加配饰</text>
+            </view>
+            <view class="cloth-item {{selectedItems.accessories && selectedItems.accessories._id === item._id ? 'selected' : ''}}" wx:for="{{categoryClothes.accessories}}" wx:key="_id" data-id="{{_id}}" data-category="accessories" bindtap="selectCloth">
+              <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+              <text class="cloth-name">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="empty-state" wx:if="{{!categoryClothes.accessories || categoryClothes.accessories.length === 0}}">
+            <text class="empty-icon">📿</text>
+            <text class="empty-text">暂无配饰</text>
+          </view>
+        </scroll-view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 试衣效果展示 -->
+  <view class="section result-section" wx:if="{{generatedImage}}">
+    <view class="section-header">
+      <text class="section-title">试衣效果</text>
+    </view>
+    <view class="result-area">
+      <image class="result-image" src="{{generatedImage}}" />
+      <view class="result-actions">
+        <button class="result-btn" bindtap="saveTryonResult">保存效果</button>
+        <button class="result-btn" bindtap="shareTryonResult">分享效果</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error" wx:if="{{error}}">
+    <text class="error-text">{{error}}</text>
+    <button class="error-btn" bindtap="handleError">重试</button>
+  </view>
+
+</view>

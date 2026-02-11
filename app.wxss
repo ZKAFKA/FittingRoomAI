@@ -1,0 +1,65 @@
+page {
+  background-color: #f8f8f8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+:root {
+  --primary-color: #333333;
+  --secondary-color: #666666;
+  --accent-color: #667eea;
+  --background-color: #f8f8f8;
+  --white: #ffffff;
+  --border-color: #eeeeee;
+  --shadow-light: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.container {
+  min-height: 100vh;
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border-radius: 50rpx;
+  padding: 24rpx 48rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #333333;
+  border: 1rpx solid #eeeeee;
+  border-radius: 50rpx;
+  padding: 24rpx 48rpx;
+  font-size: 28rpx;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.loading-spinner {
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx solid #f3f3f3;
+  border-top: 3rpx solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

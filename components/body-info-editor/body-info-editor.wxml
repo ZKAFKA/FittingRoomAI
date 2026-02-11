@@ -1,0 +1,46 @@
+<view class="body-info-editor-container" wx:if="{{visible}}">
+  <view class="body-info-editor-backdrop" bindtap="handleBackdropTap"></view>
+  <view class="body-info-editor-popup">
+  
+    <view class="body-info-editor-content">
+      <!-- 身高输入区域 -->
+      <view class="input-row">
+        <view class="input-label">身高</view>
+        <view class="input-container">
+          <input 
+            class="input-field" 
+            type="number" 
+            placeholder="请输入身高" 
+            placeholder-class="input-placeholder" 
+            value="{{height}}" 
+            bindinput="handleHeightInput"
+            maxlength="3"
+          />
+          <view class="input-unit">cm</view>
+        </view>
+      </view>
+      
+      <!-- 体重输入区域 -->
+      <view class="input-row">
+        <view class="input-label">体重</view>
+        <view class="input-container">
+          <input 
+            class="input-field" 
+            type="number" 
+            placeholder="请输入体重" 
+            placeholder-class="input-placeholder" 
+            value="{{weight}}" 
+            bindinput="handleWeightInput"
+            maxlength="3"
+          />
+          <view class="input-unit">kg</view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="body-info-editor-actions">
+      <view class="action-button cancel-button" bindtap="handleCancel">取消</view>
+      <view class="action-button confirm-button" bindtap="handleConfirm">确定</view>
+    </view>
+  </view>
+</view>

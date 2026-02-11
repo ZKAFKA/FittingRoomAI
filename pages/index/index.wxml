@@ -1,0 +1,76 @@
+<view class="container">
+  <view class="header" wx:if="{{!loading && !error}}">
+    <view class="user-info" wx:if="{{userInfo}}">
+      <image class="avatar" src="{{userInfo.avatarUrl || 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg'}}" />
+      <view class="user-details">
+        <text class="welcome">欢迎回来，{{userInfo.nickName || '用户'}}</text>
+        <text class="stats">已试衣 {{tryonCount}} 次</text>
+      </view>
+    </view>
+    <view class="user-info" wx:else>
+      <image class="avatar" src="cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg" />
+      <view class="user-details">
+        <text class="welcome">欢迎使用试衣间AI+</text>
+        <text class="stats">开始您的虚拟试衣之旅</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="quick-actions">
+    <view class="action-card" bindtap="startTryon">
+      <view class="action-icon">👔</view>
+      <text class="action-text">开始试衣</text>
+    </view>
+    <view class="action-card" bindtap="goToWardrobe">
+      <view class="action-icon">🧥</view>
+      <text class="action-text">我的衣柜
+        <text class="count">({{wardrobeCount}})</text>
+      </text>
+    </view>
+    <view class="action-card" bindtap="goToHistory">
+      <view class="action-icon">📋</view>
+      <text class="action-text">试衣记录</text>
+    </view>
+    <view class="action-card" bindtap="goToInspirations">
+      <view class="action-icon">💡</view>
+      <text class="action-text">时尚灵感
+        <text class="count">({{inspirationCount}})</text>
+      </text>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{recentTryons.length > 0 && !loading && !error}}">
+    <view class="section-header">
+      <text class="section-title">最近试衣</text>
+      <text class="section-more" bindtap="goToHistory">查看全部</text>
+    </view>
+    <scroll-view class="tryon-list" scroll-x>
+      <view class="tryon-item" wx:for="{{recentTryons}}" wx:key="_id" data-id="{{_id}}" bindtap="viewTryonDetail">
+        <image class="tryon-image" src="{{item.resultImage}}" />
+        <text class="tryon-time">{{item.createTime ? item.createTime.toLocaleDateString() : ''}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="section" wx:if="{{recommendedInspirations.length > 0 && !loading && !error}}">
+    <view class="section-header">
+      <text class="section-title">推荐灵感</text>
+      <text class="section-more" bindtap="goToInspirations">查看全部</text>
+    </view>
+    <scroll-view class="inspiration-list" scroll-x>
+      <view class="inspiration-item" wx:for="{{recommendedInspirations}}" wx:key="_id">
+        <image class="inspiration-image" src="{{item.imageUrl}}" />
+        <text class="inspiration-title">{{item.title}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="error" wx:if="{{error}}">
+    <text>{{error}}</text>
+    <button class="retry-btn" bindtap="handleError">重试</button>
+  </view>
+</view>

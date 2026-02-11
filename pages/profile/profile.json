@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "navigation-bar": "../../components/navigation-bar/navigation-bar",
+    "body-info-editor": "../../components/body-info-editor/body-info-editor"
+  },
+  "navigationBarTitleText": "我的",
+  "enablePullDownRefresh": false
+}

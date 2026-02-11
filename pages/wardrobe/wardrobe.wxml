@@ -1,0 +1,110 @@
+<view class="container">
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="header-title">
+      <text class="title">我的衣柜</text>
+      <text class="subtitle">{{filteredClothes.length}} 件服装</text>
+    </view>
+  </view>
+
+  <!-- 分割线 -->
+  <view class="category-divider"></view>
+
+  <!-- 分类导航 -->
+  <view class="category-nav">
+    <!-- 左侧下拉菜单 -->
+    <view class="dropdown-container">
+      <!-- 遮罩层 -->
+      <view class="dropdown-overlay {{isDropdownOpen ? 'show' : ''}}" bindtap="closeDropdown" catchtap="closeDropdown"></view>
+      
+      <view class="dropdown-button" bindtap="toggleDropdown">
+        <view class="dropdown-arrow {{isDropdownOpen ? 'rotate' : ''}}">
+          <text class="arrow-icon">▶</text>
+        </view>
+        <view class="selected-category">
+          <text class="category-text">{{selectedCategoryText}}</text>
+        </view>
+      </view>
+      
+      <!-- 下拉菜单 -->
+      <view class="dropdown-menu {{isDropdownOpen ? 'open' : ''}}">
+        <view class="dropdown-item {{selectedCategory === 'all' ? 'active' : ''}}" bindtap="selectCategory" data-id="all">
+          <text class="category-text">全部</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'upper' ? 'active' : ''}}" bindtap="selectCategory" data-id="upper">
+          <text class="category-text">上装</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'inner' ? 'active' : ''}}" bindtap="selectCategory" data-id="inner">
+          <text class="category-text">内搭</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'lower' ? 'active' : ''}}" bindtap="selectCategory" data-id="lower">
+          <text class="category-text">下装</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'suit' ? 'active' : ''}}" bindtap="selectCategory" data-id="suit">
+          <text class="category-text">套装</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'shoes' ? 'active' : ''}}" bindtap="selectCategory" data-id="shoes">
+          <text class="category-text">鞋帽</text>
+        </view>
+        <view class="dropdown-item {{selectedCategory === 'accessories' ? 'active' : ''}}" bindtap="selectCategory" data-id="accessories">
+          <text class="category-text">配饰</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 右侧添加服装按钮 -->
+    <view class="header-action" bindtap="navigateToUploadCloth">
+      <image class="add-icon" src="/assets/icons/plus.png" mode="aspectFill" />
+      <text class="add-text">添加服装</text>
+    </view>
+  </view>
+
+  <!-- 服装网格 -->
+  <view class="waterfall-grid">
+      <!-- 服装列表 -->
+      <view class="cloth-item" wx:for="{{filteredClothes}}" wx:key="_id" data-id="{{_id}}" bindtap="navigateToClothDetail">
+        <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+        <text class="cloth-name">{{item.name}}</text>
+        <view class="cloth-actions">
+          <view class="delete-btn" data-id="{{_id}}" bindtap="deleteCloth">
+            <text class="delete-icon">🗑️</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{filteredClothes.length === 0 && !loading}}">
+        <text class="empty-icon">👕</text>
+        <text class="empty-text">暂无服装</text>
+      </view>
+      
+      <!-- 加载状态 -->
+      <view class="loading-state" wx:if="{{loading && filteredClothes.length === 0}}">
+        <view class="local-pull-refresh-icon refreshing">
+          <image src="/assets/icons/refresh.png" mode="aspectFill" class="refresh-image" />
+        </view>
+      </view>
+    </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}">
+    <text class="load-text" bindtap="loadClothes">加载更多</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-more" wx:if="{{loading && filteredClothes.length > 0}}">
+    <view class="local-pull-refresh-icon refreshing">
+      <image src="/assets/icons/refresh.png" mode="aspectFill" class="refresh-image" />
+    </view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-section" wx:if="{{error}}">
+    <view class="error-content">
+      <text class="error-text">{{error}}</text>
+      <button class="retry-btn" bindtap="handleError">重试</button>
+    </view>
+  </view>
+
+
+</view>

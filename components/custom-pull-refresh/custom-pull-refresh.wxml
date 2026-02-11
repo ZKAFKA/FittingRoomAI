@@ -1,0 +1,8 @@
+<view class="custom-pull-refresh" style="height: {{refreshHeight}}px; transform: translateY({{translateY}}px); opacity: {{opacity}};">
+  <view class="custom-pull-refresh-content">
+    <view class="custom-pull-refresh-icon {{refreshing ? 'refreshing' : ''}}">
+      <image src="../../assets/icons/refresh.png" mode="aspectFit" class="refresh-image" />
+    </view>
+    <text class="custom-pull-refresh-text">{{refreshText}}</text>
+  </view>
+</view>

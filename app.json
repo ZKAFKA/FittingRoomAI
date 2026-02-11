@@ -1,0 +1,48 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/tryon/tryon",
+    "pages/profile/profile",
+    "pages/wardrobe/wardrobe",
+    "pages/wardrobe-detail/wardrobe-detail",
+    "pages/history/history",
+    "pages/history-detail/history-detail",
+    "pages/upload-photo/upload-photo",
+    "pages/upload-cloth/upload-cloth",
+    "pages/cloth-confirm/cloth-confirm",
+    "pages/body-profile/body-profile",
+    "pages/settings/settings",
+    "pages/tryon-settings/tryon-settings",
+    "pages/preview/preview",
+    "pages/about/about"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "虚拟试衣",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8f8f8"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "灵感"
+      },
+      {
+        "pagePath": "pages/tryon/tryon",
+        "text": "试衣"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "cloud": true
+}

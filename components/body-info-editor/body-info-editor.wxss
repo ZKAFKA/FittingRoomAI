@@ -1,0 +1,123 @@
+.body-info-editor-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.body-info-editor-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.body-info-editor-popup {
+  position: relative;
+  width: 85%;
+  max-width: 400px;
+  background: #121212;
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 0.5px solid rgba(138, 43, 226, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 10px rgba(138, 43, 226, 0.2);
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.body-info-editor-content {
+  margin-bottom: 24px;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.input-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #cccccc;
+  width: 80px;
+  margin-left: 15px;
+  align-items: center;
+}
+
+.input-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 48px;
+}
+
+.input-field {
+  flex: 1;
+  font-size: 16px;
+  color: #ffffff;
+  height: 100%;
+}
+
+.input-field::placeholder {
+  color: #666666;
+}
+
+.input-placeholder {
+  color: #666666;
+}
+
+.input-unit {
+  font-size: 14px;
+  color: #999999;
+  margin-left: 8px;
+}
+
+.body-info-editor-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.action-button {
+  flex: 1;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.confirm-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.confirm-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

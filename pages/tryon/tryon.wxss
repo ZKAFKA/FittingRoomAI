@@ -415,7 +415,7 @@
   z-index: 9999;
   display: flex;
   justify-content: center;
-  padding: 40rpx;
+  padding: 50rpx;
 }
 
 .guide-content {

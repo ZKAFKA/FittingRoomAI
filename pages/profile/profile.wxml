@@ -42,7 +42,7 @@
       <view class="card-gradient"></view>
       <image class="card-image" src="cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/wardrobe.png" mode="aspectFill" />
       <view class="card-content">
-        <text class="card-icon">👔</text>
+        <image class="card-icon" src="/assets/icons/hanger.png"></image>
         <view class="card-info">
           <text class="card-title">我的衣橱</text>
           <text class="card-subtitle">24 件服装</text>
@@ -53,7 +53,7 @@
       <view class="card-gradient primary-gradient"></view>
       <image class="card-image" src="cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/history.png" mode="aspectFill" />
       <view class="card-content">
-        <text class="card-icon">📊</text>
+        <image class="card-icon" src="/assets/icons/history.png"></image>
         <view class="card-info">
           <text class="card-title">试衣记录</text>
           <text class="card-subtitle">128 次试衣</text>

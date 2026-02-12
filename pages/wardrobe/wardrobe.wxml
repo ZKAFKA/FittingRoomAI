@@ -1,110 +1,212 @@
-<view class="container">
+<view class="page">
   <!-- 头部区域 -->
   <view class="header">
-    <view class="header-title">
-      <text class="title">我的衣柜</text>
-      <text class="subtitle">{{filteredClothes.length}} 件服装</text>
-    </view>
-  </view>
-
-  <!-- 分割线 -->
-  <view class="category-divider"></view>
-
-  <!-- 分类导航 -->
-  <view class="category-nav">
-    <!-- 左侧下拉菜单 -->
-    <view class="dropdown-container">
-      <!-- 遮罩层 -->
-      <view class="dropdown-overlay {{isDropdownOpen ? 'show' : ''}}" bindtap="closeDropdown" catchtap="closeDropdown"></view>
-      
-      <view class="dropdown-button" bindtap="toggleDropdown">
-        <view class="dropdown-arrow {{isDropdownOpen ? 'rotate' : ''}}">
-          <text class="arrow-icon">▶</text>
+    <view class="header-content">
+      <view class="header-top">
+        <view class="header-left">
+          <text class="page-title">我的衣橱</text>
         </view>
-        <view class="selected-category">
-          <text class="category-text">{{selectedCategoryText}}</text>
-        </view>
-      </view>
-      
-      <!-- 下拉菜单 -->
-      <view class="dropdown-menu {{isDropdownOpen ? 'open' : ''}}">
-        <view class="dropdown-item {{selectedCategory === 'all' ? 'active' : ''}}" bindtap="selectCategory" data-id="all">
-          <text class="category-text">全部</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'upper' ? 'active' : ''}}" bindtap="selectCategory" data-id="upper">
-          <text class="category-text">上装</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'inner' ? 'active' : ''}}" bindtap="selectCategory" data-id="inner">
-          <text class="category-text">内搭</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'lower' ? 'active' : ''}}" bindtap="selectCategory" data-id="lower">
-          <text class="category-text">下装</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'suit' ? 'active' : ''}}" bindtap="selectCategory" data-id="suit">
-          <text class="category-text">套装</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'shoes' ? 'active' : ''}}" bindtap="selectCategory" data-id="shoes">
-          <text class="category-text">鞋帽</text>
-        </view>
-        <view class="dropdown-item {{selectedCategory === 'accessories' ? 'active' : ''}}" bindtap="selectCategory" data-id="accessories">
-          <text class="category-text">配饰</text>
-        </view>
-      </view>
-    </view>
-    
-    <!-- 右侧添加服装按钮 -->
-    <view class="header-action" bindtap="navigateToUploadCloth">
-      <image class="add-icon" src="/assets/icons/plus.png" mode="aspectFill" />
-      <text class="add-text">添加服装</text>
-    </view>
-  </view>
-
-  <!-- 服装网格 -->
-  <view class="waterfall-grid">
-      <!-- 服装列表 -->
-      <view class="cloth-item" wx:for="{{filteredClothes}}" wx:key="_id" data-id="{{_id}}" bindtap="navigateToClothDetail">
-        <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
-        <text class="cloth-name">{{item.name}}</text>
-        <view class="cloth-actions">
-          <view class="delete-btn" data-id="{{_id}}" bindtap="deleteCloth">
-            <text class="delete-icon">🗑️</text>
+        <view class="header-right">
+          <view class="header-btn" bindtap="toggleSearch">
+            <image class="btn-icon" src="/assets/icons/search.png"></image>
           </view>
         </view>
       </view>
       
-      <!-- 空状态 -->
-      <view class="empty-state" wx:if="{{filteredClothes.length === 0 && !loading}}">
-        <text class="empty-icon">👕</text>
-        <text class="empty-text">暂无服装</text>
-      </view>
-      
-      <!-- 加载状态 -->
-      <view class="loading-state" wx:if="{{loading && filteredClothes.length === 0}}">
-        <view class="local-pull-refresh-icon refreshing">
-          <image src="/assets/icons/refresh.png" mode="aspectFill" class="refresh-image" />
+      <!-- 搜索栏 -->
+      <view class="search-bar {{showSearch ? 'show' : ''}}">
+        <view class="search-input-wrap">
+          <image class="search-icon" src="/assets/icons/search.png"></image>
+          <input 
+            class="search-input" 
+            placeholder="搜索标签..." 
+            placeholder-class="search-placeholder"
+            value="{{searchKeyword}}"
+            bindinput="onSearchInput"
+            confirm-type="search"
+            bindconfirm="doSearch"
+          />
+          <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="clearSearch">✕</text>
         </view>
       </view>
+      
+      <!-- 分类标签 -->
+      <scroll-view class="category-scroll" scroll-x enable-flex>
+        <view 
+          class="category-chip {{selectedCategory === 'all' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="all"
+        >
+          All ({{clothesCount.all || 0}})
+        </view>
+        <view 
+          class="category-chip {{selectedCategory === 'upper' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="upper"
+        >
+          Tops ({{clothesCount.upper || 0}})
+        </view>
+        <view 
+          class="category-chip {{selectedCategory === 'lower' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="lower"
+        >
+          Bottoms ({{clothesCount.lower || 0}})
+        </view>
+        <view 
+          class="category-chip {{selectedCategory === 'outerwear' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="outerwear"
+        >
+          Outerwear ({{clothesCount.outerwear || 0}})
+        </view>
+        <view 
+          class="category-chip {{selectedCategory === 'shoes' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="shoes"
+        >
+          Shoes ({{clothesCount.shoes || 0}})
+        </view>
+        <view 
+          class="category-chip {{selectedCategory === 'accessories' ? 'active' : ''}}" 
+          bindtap="selectCategory" 
+          data-id="accessories"
+        >
+          Accessories ({{clothesCount.accessories || 0}})
+        </view>
+      </scroll-view>
     </view>
-
-  <!-- 加载更多 -->
-  <view class="load-more" wx:if="{{hasMore && !loading}}">
-    <text class="load-text" bindtap="loadClothes">加载更多</text>
+    
+    <!-- 呼吸光特效 -->
+    <view class="header-glow"></view>
   </view>
 
-  <!-- 加载中 -->
-  <view class="loading-more" wx:if="{{loading && filteredClothes.length > 0}}">
-    <view class="local-pull-refresh-icon refreshing">
-      <image src="/assets/icons/refresh.png" mode="aspectFill" class="refresh-image" />
+  <!-- 服装网格 -->
+  <view class="clothes-grid">
+    <view 
+      class="cloth-card" 
+      wx:for="{{filteredClothes}}" 
+      wx:key="_id" 
+      bindtap="navigateToClothDetail"
+      data-id="{{item._id}}"
+    >
+      <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" />
+      <view class="cloth-info">
+        <text class="cloth-category">{{item.categoryName || '服装'}}</text>
+        <text class="cloth-name">{{item.name || '未命名'}}</text>
+      </view>
+      <view class="cloth-delete" catchtap="deleteCloth" data-id="{{item._id}}">
+        <text class="delete-icon">🗑️</text>
+      </view>
     </view>
   </view>
 
-  <!-- 错误提示 -->
-  <view class="error-section" wx:if="{{error}}">
-    <view class="error-content">
-      <text class="error-text">{{error}}</text>
-      <button class="retry-btn" bindtap="handleError">重试</button>
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredClothes.length === 0 && !loading}}">
+    <text class="empty-icon">👕</text>
+    <text class="empty-text">暂无服装</text>
+    <text class="empty-hint">点击右下角按钮添加衣物</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 悬浮添加按钮 -->
+  <view class="fab-container" bindtap="showAddModal">
+    <view class="fab-btn">
+      <view class="fab-glow"></view>
+      <image class="fab-icon" src="/assets/icons/plus.png"></image>
     </view>
   </view>
 
+  <!-- 添加衣物弹窗 -->
+  <view class="modal-overlay {{showAddClothModal ? 'show' : ''}}" catchtouchmove="preventMove">
+    <view class="modal-backdrop" bindtap="hideAddModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">添加衣物</text>
+        <text class="modal-subtitle">上传照片并添加标签</text>
+      </view>
 
+      <view class="modal-body">
+        <!-- 上传照片区域 -->
+        <view class="upload-section">
+          <view class="upload-area" bindtap="chooseImage" wx:if="{{!newClothImage}}">
+            <text class="upload-icon">📷</text>
+            <text class="upload-text">点击上传照片</text>
+          </view>
+          <view class="preview-area" wx:else>
+            <image class="preview-image" src="{{newClothImage}}" mode="aspectFill" />
+            <view class="preview-change" bindtap="chooseImage">
+              <text class="change-icon">🔄</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 选择类型 -->
+        <view class="form-group">
+          <text class="form-label">衣物类型</text>
+          <view class="type-selector">
+            <view 
+              class="type-option {{newClothCategory === 'upper' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="upper"
+            >上装</view>
+            <view 
+              class="type-option {{newClothCategory === 'inner' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="inner"
+            >内搭</view>
+            <view 
+              class="type-option {{newClothCategory === 'lower' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="lower"
+            >下装</view>
+            <view 
+              class="type-option {{newClothCategory === 'suit' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="suit"
+            >套装</view>
+            <view 
+              class="type-option {{newClothCategory === 'shoes' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="shoes"
+            >鞋帽</view>
+            <view 
+              class="type-option {{newClothCategory === 'accessories' ? 'active' : ''}}" 
+              bindtap="selectNewCategory" 
+              data-category="accessories"
+            >配饰</view>
+          </view>
+        </view>
+
+        <!-- 添加标签 -->
+        <view class="form-group">
+          <text class="form-label">添加标签</text>
+          <view class="tag-input-wrap">
+            <input 
+              class="tag-input" 
+              placeholder="输入标签，用空格分隔" 
+              placeholder-class="tag-placeholder"
+              value="{{newClothTags}}"
+              bindinput="onTagInput"
+            />
+          </view>
+          <view class="tag-preview" wx:if="{{tagList.length > 0}}">
+            <view class="tag-item" wx:for="{{tagList}}" wx:key="index">
+              <text class="tag-text">{{item}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="btn-confirm" bindtap="confirmAddCloth">确认添加</view>
+        <view class="btn-cancel" bindtap="hideAddModal">取消</view>
+      </view>
+    </view>
+  </view>
 </view>

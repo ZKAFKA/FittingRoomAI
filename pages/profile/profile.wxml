@@ -16,7 +16,7 @@
 
   <!-- Body Profile Section -->
   <view class="body-profile-section">
-    <view class="body-profile-card">
+    <view class="body-profile-card" bindtap="showEditBodyInfo">
       <view class="profile-content">
         <view class="profile-item">
           <view class="profile-label">HEIGHT</view>
@@ -100,6 +100,7 @@
     visible="{{showBodyInfoEditor}}" 
     height="{{userInfo.height}}" 
     weight="{{userInfo.weight}}" 
+    gender="{{userInfo.gender}}"
     bind:confirm="handleBodyInfoConfirm" 
     bind:cancel="handleBodyInfoCancel" 
   />

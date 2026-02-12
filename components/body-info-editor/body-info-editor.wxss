@@ -1,123 +1,205 @@
-.body-info-editor-container {
+/* 遮罩层 */
+.editor-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
 }
 
-.body-info-editor-backdrop {
+.editor-backdrop {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
 }
 
-.body-info-editor-popup {
+/* 弹窗主体 */
+.editor-modal {
   position: relative;
   width: 85%;
-  max-width: 400px;
-  background: #121212;
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 0.5px solid rgba(138, 43, 226, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 10px rgba(138, 43, 226, 0.2);
-  padding: 24px;
-  box-sizing: border-box;
+  max-width: 680rpx;
+  background: #1A162D;
+  border-radius: 32rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 40rpx 100rpx rgba(91, 19, 236, 0.15);
+  overflow: hidden;
+  animation: modalSlideUp 0.3s ease-out;
 }
 
-.body-info-editor-content {
-  margin-bottom: 24px;
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.input-row {
+/* 标题区域 */
+.editor-header {
+  padding: 56rpx 48rpx 28rpx;
+  text-align: center;
+}
+
+.editor-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1rpx;
+}
+
+.editor-subtitle {
+  font-size: 24rpx;
+  color: #94a3b8;
+  margin-top: 12rpx;
+  line-height: 1.5;
+}
+
+/* 表单区域 */
+.editor-form {
+  padding: 24rpx 48rpx 8rpx;
+}
+
+.form-group {
+  margin-bottom: 36rpx;
+}
+
+.form-label {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 4rpx;
+  padding-left: 4rpx;
+  margin-bottom: 12rpx;
+}
+
+/* 输入框 */
+.form-input-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+  padding: 0 32rpx;
+  height: 96rpx;
+  transition: all 0.2s ease;
 }
 
-.input-label {
-  font-size: 18px;
+.form-input-wrap:active {
+  border-color: rgba(91, 19, 236, 0.5);
+}
+
+.form-input {
+  flex: 1;
+  font-size: 32rpx;
   font-weight: 600;
-  color: #cccccc;
-  width: 80px;
-  margin-left: 15px;
-  align-items: center;
-}
-
-.input-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 0 12px;
-  height: 48px;
-}
-
-.input-field {
-  flex: 1;
-  font-size: 16px;
   color: #ffffff;
   height: 100%;
 }
 
-.input-field::placeholder {
-  color: #666666;
+.form-placeholder {
+  color: #4a4560;
+  font-weight: 400;
 }
 
-.input-placeholder {
-  color: #666666;
-}
-
-.input-unit {
-  font-size: 14px;
-  color: #999999;
-  margin-left: 8px;
-}
-
-.body-info-editor-actions {
+.form-input-suffix {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  align-items: center;
+  gap: 12rpx;
+  pointer-events: none;
 }
 
-.action-button {
+.form-unit {
+  font-size: 26rpx;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.form-edit-icon {
+  font-size: 28rpx;
+  color: #64748b;
+}
+
+/* 性别选择器 */
+.gender-selector {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.05);
+  padding: 6rpx;
+}
+
+.gender-option {
   flex: 1;
-  height: 48px;
-  border-radius: 8px;
+  text-align: center;
+  padding: 22rpx 0;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #94a3b8;
+  border-radius: 16rpx;
+  transition: all 0.25s ease;
+}
+
+.gender-option:active {
+  opacity: 0.8;
+}
+
+.gender-active {
+  background: #5b13ec;
+  color: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(91, 19, 236, 0.3);
+}
+
+/* 按钮区域 */
+.editor-actions {
+  padding: 8rpx 48rpx 48rpx;
+}
+
+.btn-confirm {
+  width: 100%;
+  height: 96rpx;
+  background: #5b13ec;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 12rpx 32rpx rgba(91, 19, 236, 0.3);
+  transition: all 0.2s ease;
 }
 
-.cancel-button {
-  background: rgba(255, 255, 255, 0.1);
-  color: #cccccc;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.cancel-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.confirm-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.confirm-button:hover {
+.btn-confirm:active {
+  transform: scale(0.98);
   opacity: 0.9;
-  transform: translateY(-1px);
+}
+
+.btn-cancel {
+  width: 100%;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 8rpx;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:active {
+  color: #ffffff;
 }

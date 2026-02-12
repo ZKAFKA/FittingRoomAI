@@ -9,7 +9,8 @@ Page({
       avatarUrl: '',
       openid: '',
       height: '',
-      weight: ''
+      weight: '',
+      gender: ''
     },
     appVersion: '1.0.0',
     loading: false,
@@ -105,6 +106,7 @@ Page({
         // 加载身体信息
         let height = '';
         let weight = '';
+        let gender = '';
         try {
           const bodyRes = await wx.cloud.database().collection('body_profile')
             .where({ openid })
@@ -113,6 +115,7 @@ Page({
           if (bodyRes.data.length > 0) {
             height = bodyRes.data[0].height || '';
             weight = bodyRes.data[0].weight || '';
+            gender = bodyRes.data[0].gender || '';
           }
         } catch (bodyError) {
           console.error('加载身体信息失败:', bodyError);
@@ -125,7 +128,8 @@ Page({
             avatarUrl: (userData.avatarUrl && userData.avatarUrl.indexOf('/assets/images/') === -1) ? userData.avatarUrl : '',
             openid,
             height,
-            weight
+            weight,
+            gender
           }
         });
       }
@@ -251,8 +255,8 @@ Page({
    * 处理身高体重编辑确认
    */
   async handleBodyInfoConfirm(e) {
-    const { height, weight } = e.detail;
-    await this.saveBodyInfo(height, weight);
+    const { height, weight, gender } = e.detail;
+    await this.saveBodyInfo(height, weight, gender);
     this.setData({
       showBodyInfoEditor: false
     });
@@ -268,9 +272,9 @@ Page({
   },
 
   /**
-   * 保存身高体重信息
+   * 保存身高体重性别信息
    */
-  async saveBodyInfo(heightStr, weightStr) {
+  async saveBodyInfo(heightStr, weightStr, gender) {
     try {
       if (!heightStr || !weightStr) {
         wx.showToast({
@@ -305,29 +309,31 @@ Page({
       
       const profileRes = await bodyProfileCollection.where({ openid }).get();
       
+      const saveData = {
+        height,
+        weight,
+        gender: gender || '',
+        updateTime: db.serverDate()
+      };
+
       if (profileRes.data.length > 0) {
         await bodyProfileCollection.doc(profileRes.data[0]._id).update({
-          data: {
-            height,
-            weight,
-            updateTime: db.serverDate()
-          }
+          data: saveData
         });
       } else {
         await bodyProfileCollection.add({
           data: {
             openid,
-            height,
-            weight,
-            createTime: db.serverDate(),
-            updateTime: db.serverDate()
+            ...saveData,
+            createTime: db.serverDate()
           }
         });
       }
 
       this.setData({
         'userInfo.height': height,
-        'userInfo.weight': weight
+        'userInfo.weight': weight,
+        'userInfo.gender': gender || ''
       });
 
       wx.hideLoading();
@@ -338,7 +344,7 @@ Page({
       });
 
     } catch (error) {
-      console.error('保存身高体重失败:', error);
+      console.error('保存身体信息失败:', error);
       wx.hideLoading();
       wx.showToast({
         title: '保存失败，请重试',

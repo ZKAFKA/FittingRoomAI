@@ -1,46 +1,84 @@
-<view class="body-info-editor-container" wx:if="{{visible}}">
-  <view class="body-info-editor-backdrop" bindtap="handleBackdropTap"></view>
-  <view class="body-info-editor-popup">
+<view class="editor-overlay" wx:if="{{visible}}" catchtouchmove="preventMove">
+  <!-- 背景遮罩 -->
+  <view class="editor-backdrop" bindtap="handleBackdropTap"></view>
   
-    <view class="body-info-editor-content">
-      <!-- 身高输入区域 -->
-      <view class="input-row">
-        <view class="input-label">身高</view>
-        <view class="input-container">
+  <!-- 弹窗主体 -->
+  <view class="editor-modal">
+    <!-- 标题区域 -->
+    <view class="editor-header">
+      <view class="editor-title">编辑身体数据</view>
+      <view class="editor-subtitle">更新你的身体数据以获得更精准的AI试衣效果</view>
+    </view>
+
+    <!-- 表单区域 -->
+    <view class="editor-form">
+      <!-- 身高 -->
+      <view class="form-group">
+        <view class="form-label">身高</view>
+        <view class="form-input-wrap">
           <input 
-            class="input-field" 
-            type="number" 
+            class="form-input" 
+            type="digit" 
             placeholder="请输入身高" 
-            placeholder-class="input-placeholder" 
-            value="{{height}}" 
+            placeholder-class="form-placeholder"
+            value="{{localHeight}}" 
             bindinput="handleHeightInput"
             maxlength="3"
           />
-          <view class="input-unit">cm</view>
+          <view class="form-input-suffix">
+            <text class="form-unit">cm</text>
+            <text class="form-edit-icon">✎</text>
+          </view>
         </view>
       </view>
-      
-      <!-- 体重输入区域 -->
-      <view class="input-row">
-        <view class="input-label">体重</view>
-        <view class="input-container">
+
+      <!-- 体重 -->
+      <view class="form-group">
+        <view class="form-label">体重</view>
+        <view class="form-input-wrap">
           <input 
-            class="input-field" 
-            type="number" 
+            class="form-input" 
+            type="digit" 
             placeholder="请输入体重" 
-            placeholder-class="input-placeholder" 
-            value="{{weight}}" 
+            placeholder-class="form-placeholder"
+            value="{{localWeight}}" 
             bindinput="handleWeightInput"
-            maxlength="3"
+            maxlength="5"
           />
-          <view class="input-unit">kg</view>
+          <view class="form-input-suffix">
+            <text class="form-unit">kg</text>
+            <text class="form-edit-icon">✎</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 性别 -->
+      <view class="form-group">
+        <view class="form-label">性别</view>
+        <view class="gender-selector">
+          <view 
+            class="gender-option {{localGender === 'Male' ? 'gender-active' : ''}}" 
+            bindtap="selectGender" 
+            data-gender="Male"
+          >男</view>
+          <view 
+            class="gender-option {{localGender === 'Female' ? 'gender-active' : ''}}" 
+            bindtap="selectGender" 
+            data-gender="Female"
+          >女</view>
+          <view 
+            class="gender-option {{localGender === 'Other' ? 'gender-active' : ''}}" 
+            bindtap="selectGender" 
+            data-gender="Other"
+          >其他</view>
         </view>
       </view>
     </view>
-    
-    <view class="body-info-editor-actions">
-      <view class="action-button cancel-button" bindtap="handleCancel">取消</view>
-      <view class="action-button confirm-button" bindtap="handleConfirm">确定</view>
+
+    <!-- 按钮区域 -->
+    <view class="editor-actions">
+      <view class="btn-confirm" bindtap="handleConfirm">确认修改</view>
+      <view class="btn-cancel" bindtap="handleCancel">取消</view>
     </view>
   </view>
 </view>

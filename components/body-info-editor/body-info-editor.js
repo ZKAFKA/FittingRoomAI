@@ -1,7 +1,4 @@
 Component({
-  /**
-   * 组件的属性列表
-   */
   properties: {
     visible: {
       type: Boolean,
@@ -14,66 +11,63 @@ Component({
     weight: {
       type: String,
       value: ''
+    },
+    gender: {
+      type: String,
+      value: ''
     }
   },
 
-  /**
-   * 组件的初始数据
-   */
   data: {
-    // 本地状态，用于实时更新输入值
     localHeight: '',
-    localWeight: ''
+    localWeight: '',
+    localGender: ''
   },
 
-  /**
-   * 组件的方法列表
-   */
   methods: {
-    // 处理身高输入
     handleHeightInput(e) {
-      this.setData({
-        localHeight: e.detail.value
-      });
+      this.setData({ localHeight: e.detail.value });
     },
 
-    // 处理体重输入
     handleWeightInput(e) {
-      this.setData({
-        localWeight: e.detail.value
-      });
+      this.setData({ localWeight: e.detail.value });
     },
 
-    // 处理取消操作
+    selectGender(e) {
+      this.setData({ localGender: e.currentTarget.dataset.gender });
+    },
+
     handleCancel() {
       this.triggerEvent('cancel');
     },
 
-    // 处理确认操作
     handleConfirm() {
-      const { localHeight, localWeight } = this.data;
+      const { localHeight, localWeight, localGender } = this.data;
       this.triggerEvent('confirm', {
         height: localHeight,
-        weight: localWeight
+        weight: localWeight,
+        gender: localGender
       });
     },
 
-    // 处理背景点击
     handleBackdropTap() {
       this.triggerEvent('cancel');
+    },
+
+    preventMove() {
+      // 阻止背景滚动
     }
   },
 
-  /**
-   * 生命周期函数
-   */
   observers: {
-    // 监听属性变化，更新本地状态
-    height(newHeight) {
-      this.setData({ localHeight: newHeight });
+    'height'(val) {
+      this.setData({ localHeight: val || '' });
     },
-    weight(newWeight) {
-      this.setData({ localWeight: newWeight });
+    'weight'(val) {
+      this.setData({ localWeight: val || '' });
+    },
+    'gender'(val) {
+      this.setData({ localGender: val || '' });
     }
   }
 });

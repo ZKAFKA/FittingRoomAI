@@ -1,0 +1,20 @@
+{
+  "name": "removeBackground",
+  "version": "1.0.0",
+  "description": "去除衣物背景的云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hunyuan",
+    "image",
+    "background",
+    "remove"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "^2.0.0"
+  }
+}

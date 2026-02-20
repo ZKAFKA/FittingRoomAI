@@ -1,35 +1,57 @@
+// 导入语言管理工具
+const i18n = require('../utils/i18n');
+
 Component({
   data: {
     active: 0,
-    isTryonPage: false
+    i18n: i18n,
+    langData: i18n.getLangData()
+  },
+
+  attached() {
+    // 初始化语言管理工具
+    this.initLanguage();
   },
 
   methods: {
     switchTab(e) {
       const index = e.currentTarget.dataset.index;
       const urls = [
-        '/pages/index/index',
         '/pages/tryon/tryon',
         '/pages/profile/profile'
       ];
       
-      // 获取当前页面
-      const pages = getCurrentPages();
-      const currentPage = pages[pages.length - 1];
-      const currentRoute = currentPage.route;
+      // 切换到对应页面
+      wx.switchTab({
+        url: urls[index]
+      });
+    },
+
+    /**
+     * 初始化语言管理
+     */
+    initLanguage() {
+      // 更新语言数据
+      this.updateLanguageData();
       
-      // 如果当前已经在试衣页面，点击中间按钮应该触发开始试衣
-      if (index === 1 && currentRoute.includes('tryon')) {
-        // 尝试调用试衣页面的startTryon方法
-        if (currentPage.startTryon) {
-          currentPage.startTryon();
-        }
-      } else {
-        // 切换到其他页面
-        wx.switchTab({
-          url: urls[index]
-        });
-      }
+      // 监听语言变化
+      i18n.onLanguageChange(this.onLanguageChange.bind(this));
+    },
+
+    /**
+     * 更新语言数据
+     */
+    updateLanguageData() {
+      this.setData({
+        langData: i18n.getLangData()
+      });
+    },
+
+    /**
+     * 语言变化监听器
+     */
+    onLanguageChange() {
+      this.updateLanguageData();
     }
   },
 
@@ -40,19 +62,16 @@ Component({
       const route = currentPage.route;
       
       let active = 0;
-      let isTryonPage = false;
       
       if (route.includes('tryon')) {
-        active = 1;
-        isTryonPage = true;
+        active = 0;
       } else if (route.includes('profile')) {
-        active = 2;
-        isTryonPage = false;
-      } else {
-        isTryonPage = false;
+        active = 1;
       }
       
-      this.setData({ active, isTryonPage });
+      this.setData({ active });
+      // 页面显示时更新语言数据
+      this.updateLanguageData();
     }
   }
 });

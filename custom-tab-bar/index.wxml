@@ -1,18 +1,13 @@
 <view class="tab-bar">
   <view class="tab-item left" bindtap="switchTab" data-index="0">
-    <image class="tab-icon" src="{{active === 0 ? '/assets/icons/inspire-active.png' : '/assets/icons/inspire.png'}}"></image>
-    <text class="tab-text {{active === 0 ? 'active' : ''}}">灵感</text>
+    <image class="tab-icon" src="{{active === 0 ? '/assets/icons/tryon-active.png' : '/assets/icons/tryon.png'}}"></image>
+    <text class="tab-text {{active === 0 ? 'active' : ''}}">{{langData.navigation.tryon || '试衣'}}</text>
   </view>
   
-  <view class="tab-item center" bindtap="switchTab" data-index="1">
-    <view class="center-btn {{isTryonPage ? 'tryon-mode' : ''}}">
-      <image class="center-icon" src="/assets/icons/tryon.png" wx:if="{{!isTryonPage}}"></image>
-      <text class="tryon-text" wx:if="{{isTryonPage}}">开始试衣</text>
-    </view>
-  </view>
+  <view class="tab-divider"></view>
   
-  <view class="tab-item right" bindtap="switchTab" data-index="2">
-    <image class="tab-icon" src="{{active === 2 ? '/assets/icons/profile-active.png' : '/assets/icons/profile.png'}}"></image>
-    <text class="tab-text {{active === 2 ? 'active' : ''}}">我的</text>
+  <view class="tab-item right" bindtap="switchTab" data-index="1">
+    <image class="tab-icon" src="{{active === 1 ? '/assets/icons/profile-active.png' : '/assets/icons/profile.png'}}"></image>
+    <text class="tab-text {{active === 1 ? 'active' : ''}}">{{langData.navigation.profile || '我的'}}</text>
   </view>
 </view>

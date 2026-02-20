@@ -1,1 +1,7 @@
-{ "navigationBarTitleText": "试衣间", "disableScroll": true }
+{
+  "navigationBarTitleText": "试衣间",
+  "disableScroll": false,
+  "usingComponents": {
+    "body-info-editor": "../../components/body-info-editor/body-info-editor"
+  }
+}

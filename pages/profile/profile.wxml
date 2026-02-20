@@ -1,12 +1,9 @@
 <view class="page">
   <!-- Header -->
   <view class="header">
-    <view class="relative">
+    <view class="relative" bindtap="showEditAvatar">
       <view class="avatar-container">
         <image class="avatar" src="{{userInfo.avatarUrl && userInfo.avatarUrl !== '' ? userInfo.avatarUrl : defaultAvatarUrl}}" mode="aspectFill"></image>
-      </view>
-      <view class="edit-avatar-btn" bindtap="showEditAvatar">
-        <text class="edit-icon">✏️</text>
       </view>
     </view>
     <view class="user-info">
@@ -19,17 +16,17 @@
     <view class="body-profile-card" bindtap="showEditBodyInfo">
       <view class="profile-content">
         <view class="profile-item">
-          <view class="profile-label">HEIGHT</view>
+          <view class="profile-label">{{langData.profile.height || 'HEIGHT'}}</view>
           <view class="profile-value">{{userInfo.height || '173'}}<text class="unit">cm</text></view>
         </view>
         <view class="profile-divider"></view>
         <view class="profile-item">
-          <view class="profile-label">WEIGHT</view>
+          <view class="profile-label">{{langData.profile.weight || 'WEIGHT'}}</view>
           <view class="profile-value">{{userInfo.weight || '60'}}<text class="unit">kg</text></view>
         </view>
         <view class="profile-divider"></view>
         <view class="profile-item">
-          <view class="profile-label">GENDER</view>
+          <view class="profile-label">{{langData.profile.gender || 'GENDER'}}</view>
           <view class="profile-value">{{userInfo.gender || 'Female'}}</view>
         </view>
       </view>
@@ -44,8 +41,8 @@
       <view class="card-content">
         <image class="card-icon" src="/assets/icons/hanger.png"></image>
         <view class="card-info">
-          <text class="card-title">我的衣橱</text>
-          <text class="card-subtitle">24 件服装</text>
+          <text class="card-title">{{langData.profile.myWardrobe || '我的衣橱'}}</text>
+          <text class="card-subtitle">{{langData.profile.clothingCount || '24 件服装'}}</text>
         </view>
       </view>
     </view>
@@ -55,8 +52,8 @@
       <view class="card-content">
         <image class="card-icon" src="/assets/icons/history.png"></image>
         <view class="card-info">
-          <text class="card-title">试衣记录</text>
-          <text class="card-subtitle">128 次试衣</text>
+          <text class="card-title">{{langData.profile.tryonHistory || '试衣记录'}}</text>
+          <text class="card-subtitle">{{langData.profile.tryonCount || '128 次试衣'}}</text>
         </view>
       </view>
     </view>
@@ -68,29 +65,20 @@
       <view class="menu-item" bindtap="navigateToSettings">
         <view class="menu-item-left">
           <view class="menu-icon-bg">
-            <text class="menu-icon">⚙️</text>
+            <image class="menu-icon-img" src="/assets/icons/settings.png" mode="aspectFit"></image>
           </view>
-          <text class="menu-label">设置</text>
+          <text class="menu-label">{{langData.profile.settings || '设置'}}</text>
         </view>
-        <view class="menu-chevron">›</view>
+        <image class="menu-chevron" src="/assets/icons/arrow.png" mode="aspectFit"></image>
       </view>
       <view class="menu-item" bindtap="navigateToAbout">
         <view class="menu-item-left">
           <view class="menu-icon-bg">
-            <text class="menu-icon">ℹ️</text>
+            <image class="menu-icon-img" src="/assets/icons/contact.png" mode="aspectFit"></image>
           </view>
-          <text class="menu-label">关于我们</text>
+          <text class="menu-label">{{langData.profile.about || '关于我们'}}</text>
         </view>
-        <view class="menu-chevron">›</view>
-      </view>
-      <view class="menu-item" bindtap="navigateToFeedback">
-        <view class="menu-item-left">
-          <view class="menu-icon-bg">
-            <text class="menu-icon">💬</text>
-          </view>
-          <text class="menu-label">反馈建议</text>
-        </view>
-        <view class="menu-chevron">›</view>
+        <image class="menu-chevron" src="/assets/icons/arrow.png" mode="aspectFit"></image>
       </view>
     </view>
   </view>

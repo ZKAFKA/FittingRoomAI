@@ -1,3 +1,5 @@
+const i18n = require('../../utils/i18n');
+
 Page({
 
   /**
@@ -15,13 +17,19 @@ Page({
     appVersion: '1.0.0',
     loading: false,
     showBodyInfoEditor: false,
-    defaultAvatarUrl: ''
+    defaultAvatarUrl: '',
+    // 语言相关状态
+    i18n: i18n,
+    langData: i18n.getLangData()
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    // 初始化语言管理
+    this.initLanguage();
+    
     this.getAvatarUrl();
     this.loadPageData();
   },
@@ -56,10 +64,37 @@ Page({
   updateTabBar() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
-        active: 2,
+        active: 1,
         isTryonPage: false
       });
     }
+  },
+
+  /**
+   * 初始化语言管理
+   */
+  initLanguage() {
+    // 更新语言数据
+    this.updateLanguageData();
+    
+    // 监听语言变化
+    i18n.onLanguageChange(this.onLanguageChange.bind(this));
+  },
+
+  /**
+   * 更新语言数据
+   */
+  updateLanguageData() {
+    this.setData({
+      langData: i18n.getLangData()
+    });
+  },
+
+  /**
+   * 语言变化监听器
+   */
+  onLanguageChange() {
+    this.updateLanguageData();
   },
 
   /**
@@ -141,63 +176,385 @@ Page({
   /**
    * 页面跳转 - 试衣记录
    */
-  navigateToHistory() {
-    wx.navigateTo({ url: '/pages/history/history' });
+  async navigateToHistory() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/history/history' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
   },
 
   /**
    * 页面跳转 - 我的衣柜
    */
-  navigateToWardrobe() {
-    wx.navigateTo({ url: '/pages/wardrobe/wardrobe' });
+  async navigateToWardrobe() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/wardrobe/wardrobe' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
   },
 
   /**
    * 页面跳转 - 体貌特征
    */
-  navigateToBodyProfile() {
-    wx.navigateTo({ url: '/pages/body-profile/body-profile' });
+  async navigateToBodyProfile() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/body-profile/body-profile' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
   },
 
   /**
    * 页面跳转 - 设置
    */
-  navigateToSettings() {
-    wx.navigateTo({ url: '/pages/settings/settings' });
+  async navigateToSettings() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/settings/settings' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
   },
 
   /**
    * 页面跳转 - 关于我们
    */
-  navigateToAbout() {
-    wx.navigateTo({ url: '/pages/about/about' });
+  async navigateToAbout() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/about/about' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
   },
 
   /**
    * 页面跳转 - 反馈建议
    */
-  navigateToFeedback() {
-    wx.showToast({ title: '反馈功能开发中', icon: 'none' });
+  async navigateToFeedback() {
+    try {
+      await this.checkLogin();
+      wx.showToast({ title: '反馈功能开发中', icon: 'none' });
+    } catch (error) {
+      console.log('用户未登录，取消操作');
+    }
+  },
+
+  /**
+   * 同步微信用户信息
+   */
+  async syncWechatUserInfo() {
+    try {
+      const openid = wx.getStorageSync('openid');
+      if (openid) {
+        // 调用微信用户信息获取接口
+        const res = await wx.getUserProfile({
+          desc: '用于完善用户资料'
+        });
+        
+        if (res.userInfo) {
+          const { nickName } = res.userInfo;
+          
+          // 更新用户昵称到数据库
+          const db = wx.cloud.database();
+          const userCollection = db.collection('users');
+          
+          const userRes = await userCollection.where({ openid }).get();
+          
+          if (userRes.data.length > 0) {
+            // 更新现有用户
+            await userCollection.doc(userRes.data[0]._id).update({
+              data: {
+                nickName,
+                updateTime: db.serverDate()
+              }
+            });
+          } else {
+            // 创建新用户记录
+            await userCollection.add({
+              data: {
+                openid,
+                nickName,
+                createTime: db.serverDate(),
+                updateTime: db.serverDate()
+              }
+            });
+          }
+          
+          // 更新本地数据
+          this.setData({
+            'userInfo.nickName': nickName
+          });
+        }
+      }
+    } catch (error) {
+      console.error('同步微信用户信息失败:', error);
+      // 静默失败，不影响用户使用
+    }
+  },
+
+  /**
+   * 检查登录状态，未登录则触发微信授权
+   */
+  checkLogin() {
+    return new Promise((resolve, reject) => {
+      const openid = wx.getStorageSync('openid');
+      if (openid) {
+        // 已登录
+        resolve();
+      } else {
+        // 未登录，显示授权提示
+        wx.showModal({
+          title: '登录授权',
+          content: '请授权登录以使用完整功能',
+          showCancel: true,
+          cancelText: '取消',
+          confirmText: '授权登录',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 用户确认授权
+              this.loginWithWechat().then(resolve).catch(reject);
+            } else {
+              // 用户取消授权
+              reject(new Error('用户取消授权'));
+            }
+          },
+          fail: () => {
+            reject(new Error('显示授权弹窗失败'));
+          }
+        });
+      }
+    });
+  },
+
+  /**
+   * 微信登录并获取用户信息
+   */
+  loginWithWechat() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // 1. 微信登录
+        const loginRes = await wx.login({
+          timeout: 10000
+        });
+        
+        if (!loginRes.code) {
+          throw new Error('登录失败：' + loginRes.errMsg);
+        }
+        
+        // 2. 获取用户信息
+        const userInfoRes = await wx.getUserProfile({
+          desc: '用于完善用户资料'
+        });
+        
+        if (!userInfoRes.userInfo) {
+          throw new Error('获取用户信息失败');
+        }
+        
+        const { nickName, avatarUrl } = userInfoRes.userInfo;
+        
+        // 3. 调用云函数获取openid
+        const cloudRes = await wx.cloud.callFunction({
+          name: 'login',
+          data: {
+            code: loginRes.code
+          }
+        });
+        
+        const openid = cloudRes.result.openid;
+        if (!openid) {
+          throw new Error('获取openid失败');
+        }
+        
+        // 4. 存储openid
+        wx.setStorageSync('openid', openid);
+        
+        // 5. 同步用户信息到数据库
+        await this.syncUserInfo(openid, nickName, avatarUrl);
+        
+        // 6. 重新加载页面数据
+        await this.loadPageData();
+        
+        resolve();
+      } catch (error) {
+        console.error('微信登录失败:', error);
+        reject(error);
+      }
+    });
+  },
+
+  /**
+   * 同步用户信息到数据库
+   */
+  async syncUserInfo(openid, nickName, avatarUrl) {
+    try {
+      const db = wx.cloud.database();
+      const userCollection = db.collection('users');
+      
+      // 检查用户是否已存在
+      const userRes = await userCollection.where({ openid }).get();
+      
+      if (userRes.data.length > 0) {
+        // 更新现有用户
+        await userCollection.doc(userRes.data[0]._id).update({
+          data: {
+            nickName,
+            // 保持用户头像设置不变，使用默认头像
+            updateTime: db.serverDate()
+          }
+        });
+      } else {
+        // 创建新用户记录
+        await userCollection.add({
+          data: {
+            openid,
+            nickName,
+            // 使用默认头像
+            avatarUrl: 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg',
+            createTime: db.serverDate(),
+            updateTime: db.serverDate()
+          }
+        });
+      }
+      
+      // 同步身体信息
+      await this.syncBodyInfo(openid);
+      
+    } catch (error) {
+      console.error('同步用户信息失败:', error);
+      // 静默失败，不影响登录流程
+    }
+  },
+
+  /**
+   * 同步身体信息
+   */
+  async syncBodyInfo(openid) {
+    try {
+      const db = wx.cloud.database();
+      const bodyCollection = db.collection('body_profile');
+      
+      // 检查身体信息是否已存在
+      const bodyRes = await bodyCollection.where({ openid }).get();
+      
+      if (bodyRes.data.length === 0) {
+        // 创建默认身体信息
+        await bodyCollection.add({
+          data: {
+            openid,
+            height: '',
+            weight: '',
+            gender: '',
+            createTime: db.serverDate(),
+            updateTime: db.serverDate()
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('同步身体信息失败:', error);
+    }
   },
 
   /**
    * 显示头像编辑
    */
-  showEditAvatar() {
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
-      success: (res) => {
-        const tempFilePaths = res.tempFilePaths
-        // 这里可以添加上传图片的逻辑
-        console.log('选择的头像:', tempFilePaths)
-        // 模拟更新头像
-        this.setData({
-          'userInfo.avatarUrl': tempFilePaths[0]
-        })
-      }
-    })
+  async showEditAvatar() {
+    try {
+      // 检查登录状态
+      await this.checkLogin();
+      
+      wx.chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
+        success: async (res) => {
+          const tempFilePaths = res.tempFilePaths;
+          const openid = wx.getStorageSync('openid');
+          
+          try {
+            wx.showLoading({ title: '上传中...' });
+            
+            // 生成文件路径
+            const timestamp = Date.now();
+            const fileExt = tempFilePaths[0].split('.').pop();
+            const cloudPath = `user-avatar/${openid}-avatar.${fileExt}`;
+            
+            // 上传到云存储
+            const uploadRes = await wx.cloud.uploadFile({
+              cloudPath,
+              filePath: tempFilePaths[0]
+            });
+            
+            if (uploadRes.fileID) {
+              // 获取临时文件URL
+              const urlRes = await wx.cloud.getTempFileURL({
+                fileList: [uploadRes.fileID]
+              });
+              
+              if (urlRes.fileList.length > 0 && urlRes.fileList[0].tempFileURL) {
+                const avatarUrl = urlRes.fileList[0].tempFileURL;
+                
+                // 更新数据库
+                const db = wx.cloud.database();
+                const userCollection = db.collection('users');
+                
+                const userRes = await userCollection.where({ openid }).get();
+                
+                if (userRes.data.length > 0) {
+                  await userCollection.doc(userRes.data[0]._id).update({
+                    data: {
+                      avatarUrl: uploadRes.fileID,
+                      updateTime: db.serverDate()
+                    }
+                  });
+                } else {
+                  await userCollection.add({
+                    data: {
+                      openid,
+                      avatarUrl: uploadRes.fileID,
+                      createTime: db.serverDate(),
+                      updateTime: db.serverDate()
+                    }
+                  });
+                }
+                
+                // 更新本地数据
+                this.setData({
+                  'userInfo.avatarUrl': avatarUrl
+                });
+                
+                wx.hideLoading();
+                wx.showToast({
+                  title: '头像更新成功',
+                  icon: 'success',
+                  duration: 2000
+                });
+              } else {
+                throw new Error('获取头像链接失败');
+              }
+            } else {
+              throw new Error('上传失败');
+            }
+          } catch (error) {
+            console.error('上传头像失败:', error);
+            wx.hideLoading();
+            wx.showToast({
+              title: '上传失败，请重试',
+              icon: 'none',
+              duration: 2000
+            });
+          }
+        }
+      });
+    } catch (error) {
+      console.log('用户未登录，取消头像编辑');
+    }
   },
 
   /**
@@ -245,10 +602,15 @@ Page({
   /**
    * 显示身高体重编辑弹窗
    */
-  showEditBodyInfo() {
-    this.setData({
-      showBodyInfoEditor: true
-    });
+  async showEditBodyInfo() {
+    try {
+      await this.checkLogin();
+      this.setData({
+        showBodyInfoEditor: true
+      });
+    } catch (error) {
+      console.log('用户未登录，取消编辑身体信息');
+    }
   },
 
   /**

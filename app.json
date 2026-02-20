@@ -1,6 +1,5 @@
 {
   "pages": [
-    "pages/index/index",
     "pages/tryon/tryon",
     "pages/profile/profile",
     "pages/wardrobe/wardrobe",
@@ -12,6 +11,7 @@
     "pages/cloth-confirm/cloth-confirm",
     "pages/body-profile/body-profile",
     "pages/settings/settings",
+    "pages/profile-info/profile-info",
     "pages/tryon-settings/tryon-settings",
     "pages/preview/preview",
     "pages/about/about"
@@ -26,10 +26,6 @@
   "tabBar": {
     "custom": true,
     "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "灵感"
-      },
       {
         "pagePath": "pages/tryon/tryon",
         "text": "试衣"

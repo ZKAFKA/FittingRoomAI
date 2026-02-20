@@ -1,14 +1,29 @@
 const Auth = require('./utils/auth');
+const i18n = require('./utils/i18n');
 
 App({
   globalData: {
     userInfo: null,
-    openid: null
+    openid: null,
+    i18n: i18n
   },
 
   onLaunch() {
     this.initCloud();
+    this.initI18n();
     this.checkLogin();
+    wx.cloud.init({
+      env: "fittingroom-0g0zcm3w1d2f40c5"
+    });
+  },
+
+  /**
+   * 初始化语言管理工具
+   */
+  initI18n() {
+    console.log('Initializing i18n...');
+    // 语言管理工具已经在导入时初始化
+    // 这里可以添加额外的初始化逻辑
   },
 
   onShow() {
@@ -68,5 +83,13 @@ App({
 
   getOpenid() {
     return this.globalData.openid;
+  },
+
+  /**
+   * 获取语言管理工具实例
+   * @returns {object} 语言管理工具实例
+   */
+  getI18n() {
+    return this.globalData.i18n;
   }
 });

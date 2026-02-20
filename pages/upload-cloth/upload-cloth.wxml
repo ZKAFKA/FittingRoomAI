@@ -1,1 +1,2 @@
-<view class="page"><text>开发中...</text></view>
+<!--pages/upload-cloth/upload-cloth.wxml-->
+<text>{{langData.uploadCloth.developing || 'pages/upload-cloth/upload-cloth.wxml'}}</text>

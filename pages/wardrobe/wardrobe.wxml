@@ -4,7 +4,7 @@
     <view class="header-content">
       <view class="header-top">
         <view class="header-left">
-          <text class="page-title">我的衣橱</text>
+          <text class="page-title">{{langData.wardrobe.title || '我的衣橱'}}</text>
         </view>
         <view class="header-right">
           <view class="header-btn" bindtap="toggleSearch">
@@ -19,7 +19,7 @@
           <image class="search-icon" src="/assets/icons/search.png"></image>
           <input 
             class="search-input" 
-            placeholder="搜索标签..." 
+            placeholder="{{langData.wardrobe.search || '搜索标签...'}}" 
             placeholder-class="search-placeholder"
             value="{{searchKeyword}}"
             bindinput="onSearchInput"
@@ -37,42 +37,42 @@
           bindtap="selectCategory" 
           data-id="all"
         >
-          All ({{clothesCount.all || 0}})
+          {{langData.wardrobe.all || '全部'}} ({{clothesCount.all || 0}})
         </view>
         <view 
           class="category-chip {{selectedCategory === 'upper' ? 'active' : ''}}" 
           bindtap="selectCategory" 
           data-id="upper"
         >
-          Tops ({{clothesCount.upper || 0}})
+          {{langData.wardrobe.upper || '上装'}} ({{clothesCount.upper || 0}})
         </view>
         <view 
           class="category-chip {{selectedCategory === 'lower' ? 'active' : ''}}" 
           bindtap="selectCategory" 
           data-id="lower"
         >
-          Bottoms ({{clothesCount.lower || 0}})
+          {{langData.wardrobe.lower || '下装'}} ({{clothesCount.lower || 0}})
         </view>
         <view 
-          class="category-chip {{selectedCategory === 'outerwear' ? 'active' : ''}}" 
+          class="category-chip {{selectedCategory === 'suit' ? 'active' : ''}}" 
           bindtap="selectCategory" 
-          data-id="outerwear"
+          data-id="suit"
         >
-          Outerwear ({{clothesCount.outerwear || 0}})
+          {{langData.wardrobe.suit || '套装'}} ({{clothesCount.suit || 0}})
         </view>
         <view 
           class="category-chip {{selectedCategory === 'shoes' ? 'active' : ''}}" 
           bindtap="selectCategory" 
           data-id="shoes"
         >
-          Shoes ({{clothesCount.shoes || 0}})
+          {{langData.wardrobe.shoes || '鞋帽'}} ({{clothesCount.shoes || 0}})
         </view>
         <view 
           class="category-chip {{selectedCategory === 'accessories' ? 'active' : ''}}" 
           bindtap="selectCategory" 
           data-id="accessories"
         >
-          Accessories ({{clothesCount.accessories || 0}})
+          {{langData.wardrobe.accessories || '饰品'}} ({{clothesCount.accessories || 0}})
         </view>
       </scroll-view>
     </view>
@@ -104,14 +104,14 @@
   <!-- 空状态 -->
   <view class="empty-state" wx:if="{{filteredClothes.length === 0 && !loading}}">
     <text class="empty-icon">👕</text>
-    <text class="empty-text">暂无服装</text>
-    <text class="empty-hint">点击右下角按钮添加衣物</text>
+    <text class="empty-text">{{langData.wardrobe.noClothes || '空空如也'}}</text>
+    <text class="empty-hint">{{langData.wardrobe.emptyHint || '点击右下角按钮添加衣物'}}</text>
   </view>
 
   <!-- 加载状态 -->
   <view class="loading-state" wx:if="{{loading}}">
     <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
+    <text class="loading-text">{{langData.common.loading || '加载中...'}}</text>
   </view>
 
   <!-- 悬浮添加按钮 -->
@@ -125,10 +125,10 @@
   <!-- 添加衣物弹窗 -->
   <view class="modal-overlay {{showAddClothModal ? 'show' : ''}}" catchtouchmove="preventMove">
     <view class="modal-backdrop" bindtap="hideAddModal"></view>
+    <view class="modal-glow"></view>
     <view class="modal-content">
       <view class="modal-header">
-        <text class="modal-title">添加衣物</text>
-        <text class="modal-subtitle">上传照片并添加标签</text>
+        <text class="modal-title">{{langData.wardrobe.addCloth || '新增衣物'}}</text>
       </view>
 
       <view class="modal-body">
@@ -136,60 +136,55 @@
         <view class="upload-section">
           <view class="upload-area" bindtap="chooseImage" wx:if="{{!newClothImage}}">
             <text class="upload-icon">📷</text>
-            <text class="upload-text">点击上传照片</text>
+            <text class="upload-text">{{langData.wardrobe.uploadPhoto || '点击上传照片'}}</text>
           </view>
-          <view class="preview-area" wx:else>
-            <image class="preview-image" src="{{newClothImage}}" mode="aspectFill" />
+          <view class="preview-area" wx:else style="{{previewAreaStyle}}">
+            <image class="preview-image" src="{{newClothImage}}" mode="aspectFit" />
             <view class="preview-change" bindtap="chooseImage">
-              <text class="change-icon">🔄</text>
+              <image class="change-icon" src="/assets/icons/reupload.png" mode="aspectFit" />
             </view>
           </view>
         </view>
 
         <!-- 选择类型 -->
         <view class="form-group">
-          <text class="form-label">衣物类型</text>
+          <text class="form-label">{{langData.wardrobe.clothCategory || '衣物类型'}}</text>
           <view class="type-selector">
             <view 
               class="type-option {{newClothCategory === 'upper' ? 'active' : ''}}" 
               bindtap="selectNewCategory" 
               data-category="upper"
-            >上装</view>
-            <view 
-              class="type-option {{newClothCategory === 'inner' ? 'active' : ''}}" 
-              bindtap="selectNewCategory" 
-              data-category="inner"
-            >内搭</view>
+            >{{langData.wardrobe.upper || '上装'}}</view>
             <view 
               class="type-option {{newClothCategory === 'lower' ? 'active' : ''}}" 
               bindtap="selectNewCategory" 
               data-category="lower"
-            >下装</view>
+            >{{langData.wardrobe.lower || '下装'}}</view>
             <view 
               class="type-option {{newClothCategory === 'suit' ? 'active' : ''}}" 
               bindtap="selectNewCategory" 
               data-category="suit"
-            >套装</view>
+            >{{langData.wardrobe.suit || '套装'}}</view>
             <view 
               class="type-option {{newClothCategory === 'shoes' ? 'active' : ''}}" 
               bindtap="selectNewCategory" 
               data-category="shoes"
-            >鞋帽</view>
+            >{{langData.wardrobe.shoes || '鞋帽'}}</view>
             <view 
               class="type-option {{newClothCategory === 'accessories' ? 'active' : ''}}" 
               bindtap="selectNewCategory" 
               data-category="accessories"
-            >配饰</view>
+            >{{langData.wardrobe.accessories || '饰品'}}</view>
           </view>
         </view>
 
         <!-- 添加标签 -->
         <view class="form-group">
-          <text class="form-label">添加标签</text>
+          <text class="form-label">{{langData.wardrobe.clothTags || '添加标签'}}</text>
           <view class="tag-input-wrap">
             <input 
               class="tag-input" 
-              placeholder="输入标签，用空格分隔" 
+              placeholder="{{langData.wardrobe.tagHint || '为该件衣物标注，默认为空'}}" 
               placeholder-class="tag-placeholder"
               value="{{newClothTags}}"
               bindinput="onTagInput"
@@ -201,11 +196,21 @@
             </view>
           </view>
         </view>
+
+        <!-- AI 处理状态 -->
+        <view class="ai-processing" wx:if="{{aiProcessing}}">
+          <view class="loading-spinner"></view>
+          <text class="processing-text">{{langData.wardrobe.processing || 'AI 正在处理... 移除背景中'}}</text>
+        </view>
       </view>
 
-      <view class="modal-footer">
-        <view class="btn-confirm" bindtap="confirmAddCloth">确认添加</view>
-        <view class="btn-cancel" bindtap="hideAddModal">取消</view>
+      <view class="modal-footer" wx:if="{{!aiProcessed}}">
+        <view class="btn-confirm" bindtap="confirmAddCloth">{{langData.wardrobe.confirmUpload || '确认上传'}}</view>
+        <view class="btn-cancel" bindtap="hideAddModal">{{langData.common.cancel || '取消'}}</view>
+      </view>
+      <view class="modal-footer processed" wx:else>
+        <view class="btn-secondary" bindtap="chooseImage">{{langData.wardrobe.reupload || '重新上传'}}</view>
+        <view class="btn-confirm" bindtap="addToWardrobe">{{langData.wardrobe.addToWardrobe || '加入衣橱'}}</view>
       </view>
     </view>
   </view>

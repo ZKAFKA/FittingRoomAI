@@ -1,1 +1,151 @@
-<view class="page"><text>开发中...</text></view>
+<view class="page">
+  <!-- ACCOUNT 部分 -->
+  <view class="section">
+    <view class="section-title">{{langData.settings.accountSection || '账户'}}</view>
+    <view class="option-group">
+      <view class="option-item" bindtap="handleProfileTap">
+        <image class="option-icon" src="/assets/icons/profile-active.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.personalInfo || '个人信息'}}</view>
+        </view>
+        <image class="option-arrow" src="/assets/icons/arrow.png"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- APP SETTINGS 部分 -->
+  <view class="section">
+    <view class="section-title">应用设置</view>
+    <view class="option-group">
+      <view class="option-item" bindtap="handleLanguageTap">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.language || '语言'}}</view>
+        </view>
+        <view class="option-value">
+          <text>{{currentLanguage}}</text>
+          <image class="option-arrow" src="/assets/icons/arrow.png"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- PREFERENCES 部分 -->
+  <view class="section">
+    <view class="section-title">{{langData.settings.preferencesSection || '偏好设置'}}</view>
+    <view class="option-group">
+      <view class="option-item">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.fitOptimization || '试衣效果优化'}}</view>
+          <view class="option-desc">{{langData.settings.fitOptimizationDesc || '结合身体信息优化试衣效果'}}</view>
+        </view>
+        <switch class="option-switch" checked="true" bindchange="handleNotificationChange"></switch>
+      </view>
+      <view class="option-item">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.faceProtection || '面容保护'}}</view>
+          <view class="option-desc">{{langData.settings.faceProtectionDesc || '通过面具遮盖面部，不保留面部信息'}}</view>
+        </view>
+        <switch class="option-switch" checked="true" bindchange="handleNotificationChange"></switch>
+      </view>
+      <view class="option-item">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.backgroundRemoval || '背景消除'}}</view>
+          <view class="option-desc">{{langData.settings.backgroundRemovalDesc || '自动识别并移除背景，突出人物主体'}}</view>
+        </view>
+        <switch class="option-switch" checked="true" bindchange="handleNotificationChange"></switch>
+      </view>
+    </view>
+  </view>
+
+  <!-- LEGAL & SUPPORT 部分 -->
+  <view class="section">
+    <view class="section-title">{{langData.settings.legalSection || '帮助与支持'}}</view>
+    <view class="option-group">
+      <view class="option-item" bindtap="handlePrivacyPolicyTap">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.privacyPolicy || '隐私政策'}}</view>
+          <view class="option-desc"></view>
+        </view>
+        <image class="option-arrow" src="/assets/icons/arrow.png"></image>
+      </view>
+      <view class="option-item" bindtap="handleHelpCenterTap">
+        <image class="option-icon" src="/assets/icons/settings.png"></image>
+        <view class="option-content">
+          <view class="option-title">{{langData.settings.helpCenter || '建议与反馈'}}</view>
+        </view>
+        <image class="option-arrow" src="/assets/icons/arrow.png"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 语言选择弹窗 -->
+  <view class="modal-overlay {{showLanguageModal ? 'show' : ''}}" catchtouchmove="preventMove">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">选择语言</text>
+      </view>
+      <view class="modal-body">
+        <view class="language-option" bindtap="selectLanguage" data-lang="zh-CN">
+          <text class="option-text">{{langData.languages.zhCN || '简体中文'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'zh-CN' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="zh-TW">
+          <text class="option-text">{{langData.languages.zhTW || '繁体中文'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'zh-TW' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="en">
+          <text class="option-text">{{langData.languages.en || 'English'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'en' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="ja">
+          <text class="option-text">{{langData.languages.ja || '日本語'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'ja' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="ko">
+          <text class="option-text">{{langData.languages.ko || '한국어'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'ko' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="fr">
+          <text class="option-text">{{langData.languages.fr || 'Français'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'fr' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="es">
+          <text class="option-text">{{langData.languages.es || 'Español'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'es' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="de">
+          <text class="option-text">{{langData.languages.de || 'Deutsch'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'de' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="ru">
+          <text class="option-text">{{langData.languages.ru || 'Русский'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'ru' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="ar">
+          <text class="option-text">{{langData.languages.ar || 'العربية'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'ar' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="pt">
+          <text class="option-text">{{langData.languages.pt || 'Português'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'pt' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="it">
+          <text class="option-text">{{langData.languages.it || 'Italiano'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'it' ? 'active' : ''}}"></view>
+        </view>
+        <view class="language-option" bindtap="selectLanguage" data-lang="hi">
+          <text class="option-text">{{langData.languages.hi || 'हिन्दी'}}</text>
+          <view class="option-radio {{currentLanguageCode === 'hi' ? 'active' : ''}}"></view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideLanguageModal">{{langData.common.cancel || '取消'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

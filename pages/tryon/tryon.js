@@ -1,4 +1,5 @@
 const CloudService = require('../../utils/cloud');
+const i18n = require('../../utils/i18n');
 
 Page({
   data: {
@@ -8,12 +9,9 @@ Page({
     activeCategory: 'upper',
     currentCategoryClothes: [],
     scrollIntoViewId: '',
-    // 新增状态变量
-    swiperCurrent: 1, // 默认选中上衣
+    // 各品类服装数据
     categoryClothes: {}, // 各品类服装数据
     selectedItems: {}, // 各品类选中的服装
-    swiperHeight: 600, // swiper初始高度
-    scrollPositions: {}, // 各品类滚动位置
     tryonSettings: {
       bodyType: 'standard',
       size: 'M',
@@ -32,13 +30,163 @@ Page({
     showGuideOverlay: false,
     dontShowAgain: false,
     exampleImageUrl: null,
-    uploadAreaHeight: 400
+    uploadAreaHeight: 560,
+    // 背景图片状态
+    backgroundImageLoading: true,
+    backgroundImageError: false,
+    // 网格高度相关
+    maxGridHeight: 0, // 最大网格高度（以衣物数量最多的分类为准）
+    categoryHeights: {}, // 每个分类的高度
+    // 吸顶状态相关
+    isCategoryNavSticky: false, // 分类导航是否吸顶
+    lockStatus: 'locked', // 锁定状态：locked, unlocked
+    windowHeight: 0, // 窗口高度
+    categoryNavTop: 0, // 分类导航初始位置
+    // 滑动相关
+    touchStartX: 0,
+    touchStartY: 0,
+    touchEndX: 0,
+    touchEndY: 0,
+    isSwiping: false,
+    // 边缘高亮提示
+    showLeftEdgeHint: false,
+    showRightEdgeHint: false,
+    // 分类顺序
+    categories: ['upper', 'lower', 'suit', 'shoes', 'accessories'],
+    // 身体信息
+    bodyInfo: {
+      height: '',
+      weight: '',
+      gender: ''
+    },
+    // 身体信息编辑器弹窗
+    showBodyInfoEditor: false,
+    // 语言相关状态
+    i18n: i18n,
+    langData: i18n.getLangData(),
+
   },
 
   onLoad() {
+    // 初始化语言管理
+    this.initLanguage();
+    
     this.loadClothOptions();
-    this.checkFirstTime();
     this.loadExampleImage();
+    this.getSystemInfo();
+    this.loadBodyInfo();
+  },
+
+  loadBodyInfo() {
+    try {
+      // 从数据库获取身体信息
+      const openid = wx.getStorageSync('openid');
+      if (openid) {
+        wx.cloud.database().collection('body_profile')
+          .where({ openid })
+          .get()
+          .then(res => {
+            if (res.data.length > 0) {
+              const bodyInfo = res.data[0];
+              this.setData({
+                bodyInfo: {
+                  height: bodyInfo.height || '',
+                  weight: bodyInfo.weight || '',
+                  gender: bodyInfo.gender || ''
+                }
+              });
+            } else {
+              // 如果数据库中没有数据，使用默认值
+              this.setData({
+                bodyInfo: {
+                  height: '',
+                  weight: '',
+                  gender: ''
+                }
+              });
+            }
+          })
+          .catch(error => {
+            console.error('从数据库加载身体信息失败:', error);
+            // 失败时使用默认值
+            this.setData({
+              bodyInfo: {
+                height: '',
+                weight: '',
+                gender: ''
+              }
+            });
+          });
+      } else {
+        // 如果没有openid，使用默认值
+        this.setData({
+          bodyInfo: {
+            height: '',
+            weight: '',
+            gender: ''
+          }
+        });
+      }
+    } catch (error) {
+      console.error('加载身体信息失败:', error);
+      // 异常时使用默认值
+      this.setData({
+        bodyInfo: {
+          height: '',
+          weight: '',
+          gender: ''
+        }
+      });
+    }
+  },
+
+  showBodyInfoEditor() {
+    this.setData({ showBodyInfoEditor: true });
+  },
+
+  hideBodyInfoEditor() {
+    this.setData({ showBodyInfoEditor: false });
+  },
+
+  handleBodyInfoConfirm(e) {
+    try {
+      const { height, weight, gender } = e.detail;
+      this.setData({
+        bodyInfo: {
+          height,
+          weight,
+          gender
+        },
+        showBodyInfoEditor: false
+      });
+    } catch (error) {
+      console.error('处理身体信息失败:', error);
+    }
+  },
+
+  getSystemInfo() {
+    wx.getSystemInfo({
+      success: (res) => {
+        this.setData({
+          windowHeight: res.windowHeight
+        });
+        
+        // 获取分类导航的初始位置
+        this.getCategoryNavPosition();
+      }
+    });
+  },
+
+  getCategoryNavPosition() {
+    const query = wx.createSelectorQuery();
+    query.select('.category-nav').boundingClientRect();
+    query.exec((res) => {
+      if (res && res[0]) {
+        this.setData({
+          categoryNavTop: res[0].top
+        });
+      }
+    });
   },
 
   async loadExampleImage() {
@@ -57,6 +205,13 @@ Page({
     this.updateTabBar();
   },
 
+  onReady() {
+    // 页面渲染完成后再次获取分类导航的位置，确保值的准确性
+    setTimeout(() => {
+      this.getCategoryNavPosition();
+    }, 100);
+  },
+
   checkFirstTime() {
     const hasSeenGuide = wx.getStorageSync('hasSeenTryonGuide');
     if (!hasSeenGuide) {
@@ -67,30 +222,63 @@ Page({
   updateTabBar() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
-        active: 1,
+        active: 0,
         isTryonPage: true
       });
     }
+  },
+
+  /**
+   * 初始化语言管理
+   */
+  initLanguage() {
+    // 更新语言数据
+    this.updateLanguageData();
+    
+    // 监听语言变化
+    i18n.onLanguageChange(this.onLanguageChange.bind(this));
+  },
+
+  /**
+   * 更新语言数据
+   */
+  updateLanguageData() {
+    this.setData({
+      langData: i18n.getLangData()
+    });
+  },
+
+  /**
+   * 语言变化监听器
+   */
+  onLanguageChange() {
+    this.updateLanguageData();
   },
 
   async loadClothOptions() {
     try {
       this.setData({ loading: true });
       
-      const res = await wx.cloud.database().collection('wardrobe')
-        .where({ status: 'active' })
-        .get();
-      
-      if (!res || !res.data) {
-        throw new Error('获取服装数据失败');
-      }
+      // 添加模拟数据
+      const mockClothes = [
+        { _id: 'mock-1', name: '白色T恤', category: 'upper', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-2', name: '蓝色牛仔裤', category: 'lower', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-3', name: '黑色外套', category: 'upper', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-4', name: '红色裙子', category: 'lower', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-5', name: '商务套装', category: 'suit', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-6', name: '运动鞋', category: 'shoes', imageUrl: '/test/unnamed.png', status: 'active' },
+        { _id: 'mock-8', name: '夹克', category: 'upper', imageUrl: '/test/unnamed.png', status: 'active' }
+      ];
       
       this.setData({ 
-        clothOptions: res.data || [],
+        clothOptions: mockClothes,
         loading: false 
       });
       
-      this.loadAllCategories();
+      // 添加加载过渡效果
+      setTimeout(() => {
+        this.loadAllCategories();
+      }, 100);
     } catch (error) {
       console.error('加载服装选项失败:', error);
       this.setData({ 
@@ -110,24 +298,50 @@ Page({
   },
 
   loadAllCategories() {
-    const categories = ['headwear', 'upper', 'inner', 'lower', 'suit', 'shoes', 'accessories'];
+    const categories = ['upper', 'lower', 'suit', 'shoes', 'accessories'];
     const categoryClothes = {};
+    const categoryHeights = {};
+    let maxClothCount = 0;
+    
+    // 获取屏幕高度（转换为rpx）
+    const { windowHeight } = this.data;
+    // 导航栏高度为120rpx
+    const navHeight = 120;
+    // 计算最小高度：屏幕高度 - 导航栏高度（转换为rpx，假设1px = 2rpx）
+    const minHeight = Math.floor(windowHeight * 2) - navHeight;
     
     categories.forEach(category => {
-      categoryClothes[category] = this.filterClothesByCategory(category);
+      const clothes = this.filterClothesByCategory(category);
+      categoryClothes[category] = clothes;
+      // 计算衣物数量（包括添加按钮）
+      const clothCount = clothes.length + 1;
+      if (clothCount > maxClothCount) {
+        maxClothCount = clothCount;
+      }
+      // 为每个分类计算合适的高度
+      const rows = Math.ceil(clothCount / 3);
+      const contentHeight = rows * 320; // 300rpx卡片高度 + 20rpx间隙
+      // 取内容高度和最小高度的最大值
+      categoryHeights[category] = Math.max(contentHeight, minHeight);
     });
     
-    this.setData({ categoryClothes });
+    // 计算最大网格高度（基于衣物数量最多的分类）
+    const rows = Math.ceil(maxClothCount / 3);
+    const contentHeight = rows * 320;
+    const maxGridHeight = Math.max(contentHeight, minHeight); // 同样应用最小高度限制
     
-    // 初始化swiper高度
-    this.calculateSwiperHeight();
+    this.setData({ 
+      categoryClothes,
+      categoryHeights,
+      maxGridHeight
+    });
   },
 
   filterClothesByCategory(category) {
     const { clothOptions } = this.data;
     
     if (clothOptions.length === 0) {
-      return this.getMockClothes(category);
+      return [];
     }
     
     const categoryMap = {
@@ -146,228 +360,289 @@ Page({
       return keywords.some(keyword => name.includes(keyword));
     });
     
-    return filteredClothes.length > 0 ? filteredClothes : this.getMockClothes(category);
+    return filteredClothes;
   },
 
-  getMockClothes(category) {
-    const mockData = {
-      'headwear': [
-        { _id: 'mock-headwear-1', name: '棒球帽', imageUrl: '/assets/icons/icon-history.png', category: 'headwear' },
-        { _id: 'mock-headwear-2', name: '渔夫帽', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'headwear' },
-        { _id: 'mock-headwear-3', name: '发带', imageUrl: '/assets/icons/icon-history.png', category: 'headwear' }
-      ],
-      'upper': [
-        { _id: 'mock-upper-1', name: '白色T恤', imageUrl: '/assets/icons/icon-history.png', category: 'upper' },
-        { _id: 'mock-upper-2', name: '蓝色衬衫', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'upper' },
-        { _id: 'mock-upper-3', name: '黑色夹克', imageUrl: '/assets/icons/icon-history.png', category: 'upper' },
-        { _id: 'mock-upper-4', name: '灰色外套', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'upper' },
-        { _id: 'mock-upper-5', name: '红色卫衣', imageUrl: '/assets/icons/icon-history.png', category: 'upper' },
-        { _id: 'mock-upper-6', name: '绿色毛衣', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'upper' },
-        { _id: 'mock-upper-7', name: '粉色针织衫', imageUrl: '/assets/icons/icon-history.png', category: 'upper' },
-        { _id: 'mock-upper-8', name: '紫色风衣', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'upper' },
-        { _id: 'mock-upper-9', name: '黄色背心', imageUrl: '/assets/icons/icon-history.png', category: 'upper' }
-      ],
-      'inner': [
-        { _id: 'mock-inner-1', name: '白色背心', imageUrl: '/assets/icons/icon-history.png', category: 'inner' },
-        { _id: 'mock-inner-2', name: '黑色打底', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'inner' },
-        { _id: 'mock-inner-3', name: '灰色内衣', imageUrl: '/assets/icons/icon-history.png', category: 'inner' }
-      ],
-      'lower': [
-        { _id: 'mock-lower-1', name: '牛仔裤', imageUrl: '/assets/icons/icon-history.png', category: 'lower' },
-        { _id: 'mock-lower-2', name: '休闲裤', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'lower' },
-        { _id: 'mock-lower-3', name: '运动短裤', imageUrl: '/assets/icons/icon-history.png', category: 'lower' }
-      ],
-      'suit': [
-        { _id: 'mock-suit-1', name: '西装套装', imageUrl: '/assets/icons/icon-history.png', category: 'suit' },
-        { _id: 'mock-suit-2', name: '运动套装', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'suit' },
-        { _id: 'mock-suit-3', name: '休闲套装', imageUrl: '/assets/icons/icon-history.png', category: 'suit' },
-        { _id: 'mock-suit-4', name: '正装套装', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'suit' },
-        { _id: 'mock-suit-5', name: '商务套装', imageUrl: '/assets/icons/icon-history.png', category: 'suit' },
-        { _id: 'mock-suit-6', name: '时尚套装', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'suit' },
-        { _id: 'mock-suit-7', name: '休闲西装', imageUrl: '/assets/icons/icon-history.png', category: 'suit' },
-        { _id: 'mock-suit-8', name: '运动休闲', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'suit' },
-        { _id: 'mock-suit-9', name: '商务休闲', imageUrl: '/assets/icons/icon-history.png', category: 'suit' }
-      ],
-      'shoes': [
-        { _id: 'mock-shoes-1', name: '运动鞋', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'shoes' },
-        { _id: 'mock-shoes-2', name: '休闲鞋', imageUrl: '/assets/icons/icon-history.png', category: 'shoes' }
-      ],
-      'accessories': [
-        { _id: 'mock-acc-1', name: '项链', imageUrl: '/assets/icons/icon-history.png', category: 'accessories' },
-        { _id: 'mock-acc-2', name: '腕饰', imageUrl: '/assets/icons/icon-wardrobe.png', category: 'accessories' },
-        { _id: 'mock-acc-3', name: '时尚包', imageUrl: '/assets/icons/icon-history.png', category: 'accessories' }
-      ]
-    };
-    
-    return mockData[category] || [];
-  },
+
 
   selectCategory(e) {
     const category = e.currentTarget.dataset.category;
-    const categoryIndex = this.getIndexByCategory(category);
     
-    this.setData({ 
-      activeCategory: category,
-      scrollIntoViewId: `category-${category}`,
-      swiperCurrent: categoryIndex
-    });
-    
-    // 恢复滚动位置
-    this.restoreScrollPosition(category);
-  },
-
-  handleAddCloth(e) {
-    const category = e.currentTarget.dataset.category;
-    const categoryNames = {
-      'upper': '上装',
-      'inner': '内搭',
-      'lower': '下装',
-      'suit': '套装',
-      'shoes': '鞋帽',
-      'accessories': '配饰'
-    };
-    
-    wx.showModal({
-      title: '添加衣服',
-      content: `是否要添加新的${categoryNames[category]}到衣橱？`,
-      confirmText: '确定',
-      cancelText: '取消',
-      success: (res) => {
-        if (res.confirm) {
-          wx.chooseMedia({
-            count: 1,
-            mediaType: 'image',
-            sourceType: ['album', 'camera'],
-            success: (res) => {
-              const tempFilePath = res.tempFiles[0].tempFilePath;
-              
-              wx.showToast({
-                title: '上传中...',
-                icon: 'loading',
-                duration: 2000
-              });
-              
-              setTimeout(() => {
-                wx.showToast({
-                  title: '添加成功',
-                  icon: 'success',
-                  duration: 2000
-                });
-              }, 2000);
-            },
-            fail: (err) => {
-              wx.showToast({
-                title: '选择图片失败',
-                icon: 'none',
-                duration: 2000
-              });
-            }
-          });
-        }
-      }
-    });
-  },
-
-  getIndexByCategory(category) {
-    const categories = ['upper', 'inner', 'lower', 'suit', 'shoes', 'accessories'];
-    return categories.indexOf(category);
-  },
-
-  getCategoryByIndex(index) {
-    const categories = ['upper', 'inner', 'lower', 'suit', 'shoes', 'accessories'];
-    return categories[index];
-  },
-
-  handleSwiperChange(e) {
-    const current = e.detail.current;
-    const category = this.getCategoryByIndex(current);
-    
-    this.setData({ 
-      swiperCurrent: current,
+    // 先设置过渡效果
+    this.setData({
       activeCategory: category,
       scrollIntoViewId: `category-${category}`
     });
     
-    // 恢复滚动位置
-    this.restoreScrollPosition(category);
-    
-    // 预加载相邻品类数据
-    this.preloadAdjacentCategories(current);
+    // 无论是否处于吸顶状态，切换分类时都会自动滑到最顶端
+    this.scrollToCategoryTop(category);
   },
 
-  handleScroll(e) {
+  scrollToCategoryTop(category) {
+    // 跳转到分类内容的顶部
+    const query = wx.createSelectorQuery();
+    query.select(`.category-content[data-category="${category}"]`).boundingClientRect();
+    query.exec((res) => {
+      if (res && res[0]) {
+        const { isCategoryNavSticky } = this.data;
+        // 当导航栏吸顶时，需要考虑导航栏高度（120rpx），确保内容不被遮挡
+        // 当导航栏不吸顶时，保持原有逻辑
+        const navHeight = isCategoryNavSticky ? 120 : 100;
+        wx.pageScrollTo({
+          scrollTop: res[0].top - navHeight,
+          duration: 300
+        });
+      }
+    });
+  },
+
+  handleAddCloth(e) {
     const category = e.currentTarget.dataset.category;
-    const scrollTop = e.detail.scrollTop;
-    
-    // 保存滚动位置
-    this.setData({
-      [`scrollPositions.${category}`]: scrollTop
+    // 跳转到衣橱页面，显示添加衣物弹窗
+    wx.navigateTo({
+      url: `/pages/wardrobe/wardrobe?showAddModal=true&defaultCategory=${category}`
     });
   },
 
   // 滚动同步效果
   onPageScroll(e) {
     const scrollTop = e.scrollTop;
-    // 这里可以添加滚动同步的逻辑
-    // 例如：当页面滚动时，调整导航栏的位置或透明度
-  },
-
-  restoreScrollPosition(category) {
-    const { scrollPositions } = this.data;
-    const scrollTop = scrollPositions[category] || 0;
+    const { categoryNavTop, isCategoryNavSticky, lockStatus, activeCategory } = this.data;
     
-    // 延迟执行，确保scroll-view已经渲染
-    setTimeout(() => {
-      const scrollView = wx.createSelectorQuery().select(`.waterfall-scroll[data-category="${category}"]`);
-      scrollView.scrollOffset({ scrollTop, animated: false }).exec();
-    }, 100);
-  },
-
-  preloadAdjacentCategories(currentIndex) {
-    const categories = ['headwear', 'upper', 'inner', 'lower', 'shoes', 'accessories'];
-    const adjacentIndices = [currentIndex - 1, currentIndex + 1];
+    // 确保categoryNavTop有值
+    if (!categoryNavTop) {
+      this.getCategoryNavPosition();
+      return;
+    }
     
-    adjacentIndices.forEach(index => {
-      if (index >= 0 && index < categories.length) {
-        const category = categories[index];
-        // 这里可以添加实际的预加载逻辑
-        console.log(`预加载 ${category} 数据`);
+    // 实现吸顶状态的锁定机制
+    if (isCategoryNavSticky) {
+      if (scrollTop < categoryNavTop) {
+        // 当导航栏处于吸顶状态，且用户向上滑动
+        if (lockStatus === 'locked') {
+          // 第一次滑到顶端时解锁
+          this.setData({ lockStatus: 'unlocked' });
+        } else if (lockStatus === 'unlocked') {
+          // 解锁状态下再次上滑退出吸顶
+          // 检查当前激活分类的内容区域位置
+          const query = wx.createSelectorQuery();
+          query.selectAll('.category-content').boundingClientRect();
+          query.exec((res) => {
+            if (res && res.length > 0) {
+              // 找到当前激活分类的内容区域
+              for (let i = 0; i < res.length; i++) {
+                if (res[i].dataset && res[i].dataset.category === activeCategory) {
+                  if (res[i].top >= 0) {
+                    this.setData({
+                      isCategoryNavSticky: false,
+                      lockStatus: 'locked'
+                    });
+                  }
+                  break;
+                }
+              }
+              // 如果没有找到带dataset的元素，使用第一个
+              if (res[0] && res[0].top >= 0) {
+                this.setData({
+                  isCategoryNavSticky: false,
+                  lockStatus: 'locked'
+                });
+              }
+            }
+          });
+        }
+      } else if (scrollTop > categoryNavTop && lockStatus === 'unlocked') {
+        // 解锁状态下下滑，重新锁定
+        this.setData({ lockStatus: 'locked' });
       }
+    } else {
+      if (scrollTop >= categoryNavTop) {
+        // 下滑时进入吸顶状态并锁定
+        this.setData({
+          isCategoryNavSticky: true,
+          lockStatus: 'locked'
+        });
+      }
+    }
+  },
+
+  chooseUserImage() {
+    console.log('chooseUserImage called');
+    // 先检查登录状态
+    this.checkLogin().then(() => {
+      // 登录成功后显示引导弹窗
+      this.setData({ showGuideOverlay: true });
+    }).catch(() => {
+      // 登录失败或取消，不继续操作
+      console.log('用户未登录');
     });
   },
 
-  calculateSwiperHeight() {
-    // 获取屏幕高度，计算swiper高度
-    wx.getSystemInfo({ 
-      success: (res) => {
-        const screenHeight = res.screenHeight;
-        const windowHeight = res.windowHeight;
-        
-        // 计算可用高度（减去上传区域和导航栏）
-        const uploadAreaHeight = this.data.uploadAreaHeight || 400;
-        const swiperHeight = windowHeight - (uploadAreaHeight * 2) - 200; // 估算值
-        
-        this.setData({ 
-          swiperHeight: Math.max(swiperHeight, 500) // 最小高度500
+  /**
+   * 检查登录状态，未登录则触发微信授权
+   */
+  checkLogin() {
+    return new Promise((resolve, reject) => {
+      const openid = wx.getStorageSync('openid');
+      if (openid) {
+        // 已登录
+        resolve();
+      } else {
+        // 未登录，显示授权提示
+        wx.showModal({
+          title: '登录授权',
+          content: '请授权登录以使用完整功能',
+          showCancel: true,
+          cancelText: '取消',
+          confirmText: '授权登录',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 用户确认授权
+              this.loginWithWechat().then(resolve).catch(reject);
+            } else {
+              // 用户取消授权
+              reject(new Error('用户取消授权'));
+            }
+          },
+          fail: () => {
+            reject(new Error('显示授权弹窗失败'));
+          }
         });
       }
     });
   },
 
-  chooseUserImage() {
-    const hasSeenGuide = wx.getStorageSync('hasSeenTryonGuide');
-    if (!hasSeenGuide) {
-      this.setData({ showGuideOverlay: true });
-    } else {
-      this.openImagePicker();
+  /**
+   * 微信登录并获取用户信息
+   */
+  loginWithWechat() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // 1. 微信登录
+        const loginRes = await wx.login({
+          timeout: 10000
+        });
+        
+        if (!loginRes.code) {
+          throw new Error('登录失败：' + loginRes.errMsg);
+        }
+        
+        // 2. 获取用户信息
+        const userInfoRes = await wx.getUserProfile({
+          desc: '用于完善用户资料'
+        });
+        
+        if (!userInfoRes.userInfo) {
+          throw new Error('获取用户信息失败');
+        }
+        
+        const { nickName, avatarUrl } = userInfoRes.userInfo;
+        
+        // 3. 调用云函数获取openid
+        const cloudRes = await wx.cloud.callFunction({
+          name: 'login',
+          data: {
+            code: loginRes.code
+          }
+        });
+        
+        const openid = cloudRes.result.openid;
+        if (!openid) {
+          throw new Error('获取openid失败');
+        }
+        
+        // 4. 存储openid
+        wx.setStorageSync('openid', openid);
+        
+        // 5. 同步用户信息到数据库
+        await this.syncUserInfo(openid, nickName, avatarUrl);
+        
+        resolve();
+      } catch (error) {
+        console.error('微信登录失败:', error);
+        reject(error);
+      }
+    });
+  },
+
+  /**
+   * 同步用户信息到数据库
+   */
+  async syncUserInfo(openid, nickName, avatarUrl) {
+    try {
+      const db = wx.cloud.database();
+      const userCollection = db.collection('users');
+      
+      // 检查用户是否已存在
+      const userRes = await userCollection.where({ openid }).get();
+      
+      if (userRes.data.length > 0) {
+        // 更新现有用户
+        await userCollection.doc(userRes.data[0]._id).update({
+          data: {
+            nickName,
+            // 保持用户头像设置不变，使用默认头像
+            updateTime: db.serverDate()
+          }
+        });
+      } else {
+        // 创建新用户记录
+        await userCollection.add({
+          data: {
+            openid,
+            nickName,
+            // 使用默认头像
+            avatarUrl: 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg',
+            createTime: db.serverDate(),
+            updateTime: db.serverDate()
+          }
+        });
+      }
+      
+      // 同步身体信息
+      await this.syncBodyInfo(openid);
+      
+    } catch (error) {
+      console.error('同步用户信息失败:', error);
+      // 静默失败，不影响登录流程
+    }
+  },
+
+  /**
+   * 同步身体信息
+   */
+  async syncBodyInfo(openid) {
+    try {
+      const db = wx.cloud.database();
+      const bodyCollection = db.collection('body_profile');
+      
+      // 检查身体信息是否已存在
+      const bodyRes = await bodyCollection.where({ openid }).get();
+      
+      if (bodyRes.data.length === 0) {
+        // 创建默认身体信息
+        await bodyCollection.add({
+          data: {
+            openid,
+            height: '',
+            weight: '',
+            gender: '',
+            createTime: db.serverDate(),
+            updateTime: db.serverDate()
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('同步身体信息失败:', error);
     }
   },
 
   openImagePicker() {
     wx.chooseMedia({
-      count:1,
+      count: 1,
       mediaType: ['image'],
-      sizeType: ['compressed'],
+      sizeType: ['compressed'], // 自动压缩高分辨率图片
       sourceType: ['album', 'camera'],
       success: (res) => {
         try {
@@ -397,39 +672,60 @@ Page({
           wx.getImageInfo({
             src: tempFile.tempFilePath,
             success: (imageInfo) => {
-              const { width, height } = imageInfo;
-              const aspectRatio = width / height;
+              // 使用实际图片的宽高比例
+              const aspectRatio = imageInfo.width / imageInfo.height;
               
-              const screenWidth = 750;
-              const containerWidth = screenWidth - 40;
-              const calculatedHeight = containerWidth / aspectRatio;
-              
-              let finalHeight = calculatedHeight;
-              const minHeight = 400;
-              const maxHeight = 800;
-              
-              if (aspectRatio < 1) {
-                if (calculatedHeight > maxHeight) {
-                  finalHeight = maxHeight;
-                } else if (calculatedHeight < minHeight) {
-                  finalHeight = minHeight;
+              // 获取屏幕信息
+              wx.getSystemInfo({
+                success: (systemInfo) => {
+                  // 计算upload-area的实际宽度（rpx）
+                  const screenWidth = 750; // 微信小程序设计稿宽度
+                  const containerMaxWidth = screenWidth * 0.85; // 85%的屏幕宽度
+                  const uploadAreaWidth = containerMaxWidth - 10; // 容器最大宽度减去10rpx
+                  
+                  // 根据宽度计算高度，使用实际图片的比例
+                  const calculatedHeight = uploadAreaWidth / aspectRatio;
+                  
+                  // 计算页面80%的高度限制（rpx）
+                  const maxHeightLimit = (systemInfo.windowHeight * 2) * 0.8; // 转换为rpx并取80%
+                  
+                  // 限制最大高度为页面的80%
+                  let finalHeight = calculatedHeight;
+                  if (finalHeight > maxHeightLimit) {
+                    finalHeight = maxHeightLimit;
+                  }
+                  
+                  this.setData({ 
+                    userImage: tempFile.tempFilePath,
+                    uploadAreaHeight: Math.round(finalHeight)
+                  });
+                },
+                fail: (error) => {
+                  console.error('获取系统信息失败:', error);
+                  // 失败时使用默认计算
+                  const screenWidth = 750; // 微信小程序设计稿宽度
+                  const containerMaxWidth = screenWidth * 0.85; // 85%的屏幕宽度
+                  const uploadAreaWidth = containerMaxWidth - 10; // 容器最大宽度减去10rpx
+                  
+                  // 使用实际图片的宽高比例
+                  const aspectRatio = imageInfo.width / imageInfo.height;
+                  // 根据宽度计算高度
+                  const calculatedHeight = uploadAreaWidth / aspectRatio;
+                  
+                  this.setData({ 
+                    userImage: tempFile.tempFilePath,
+                    uploadAreaHeight: Math.round(calculatedHeight)
+                  });
                 }
-              } else {
-                if (calculatedHeight < minHeight) {
-                  finalHeight = minHeight;
-                } else if (calculatedHeight > maxHeight) {
-                  finalHeight = maxHeight;
-                }
-              }
-              
-              this.setData({ 
-                userImage: tempFile.tempFilePath,
-                uploadAreaHeight: Math.round(finalHeight)
               });
             },
             fail: (error) => {
               console.error('获取图片信息失败:', error);
-              this.setData({ userImage: tempFile.tempFilePath });
+              // 失败时使用默认高度
+              this.setData({ 
+                userImage: tempFile.tempFilePath,
+                uploadAreaHeight: 560 // 默认高度
+              });
             }
           });
         } catch (error) {
@@ -581,9 +877,9 @@ Page({
     }
   },
 
-  async generateTryon() {
-    if (!this.data.userImage || !this.data.selectedCloth) {
-      wx.showToast({ title: '请上传照片并选择服装', icon: 'none' });
+  async generateTryon(prompt) {
+    if (!this.data.userImage) {
+      wx.showToast({ title: '请上传照片', icon: 'none' });
       return;
     }
 
@@ -615,20 +911,21 @@ Page({
         return;
       }
       
+      // 准备衣物图片信息
+      const { selectedItems } = this.data;
+      const clothImages = Object.values(selectedItems).map(item => item.imageUrl);
+      
       let generateResult;
       try {
-        generateResult = await wx.cloud.callFunction({
-          name: 'generateImage-wndKh7',
-          data: {
-            userImage: uploadResult.fileID,
-            clothId: this.data.selectedCloth._id,
-            settings: this.data.tryonSettings,
-            generateSettings: this.data.generateSettings
-          }
+        // 调用hunyuanGenerateImage函数生成试衣效果
+        generateResult = await this.hunyuanGenerateImage({
+          prompt,
+          userImage: uploadResult.fileID,
+          clothImages
         });
       } catch (cloudError) {
         wx.hideLoading();
-        console.error('云函数调用失败:', cloudError);
+        console.error('图片生成失败:', cloudError);
         
         const errMsg = cloudError.errMsg || '';
         if (errMsg.includes('network') || errMsg.includes('网络')) {
@@ -636,20 +933,40 @@ Page({
         } else if (errMsg.includes('timeout') || errMsg.includes('超时')) {
           this.showErrorModal('请求超时', '服务器响应时间过长，请稍后重试');
         } else if (errMsg.includes('quota') || errMsg.includes('配额')) {
-          this.showErrorModal('云函数调用次数超限', '请稍后重试或升级套餐');
+          this.showErrorModal('调用次数超限', '请稍后重试或升级套餐');
         } else {
           this.showErrorModal('生成失败', cloudError.message || '服务器处理失败，请稍后重试');
         }
         return;
       }
 
-      if (generateResult.result && generateResult.result.success) {
-        this.setData({ generatedImage: generateResult.result.imageUrl });
+      if (generateResult && generateResult.imageUrl) {
+        // 显示生成结果
+        this.setData({ generatedImage: generateResult.imageUrl });
+        
+        // 保存生成结果到云存储和数据库（带重试机制）
+        let saveResult;
+        try {
+          saveResult = await this.saveTryonResultWithRetry(generateResult.imageUrl);
+        } catch (error) {
+          console.error('保存试衣结果异常:', error);
+          saveResult = { success: false, error: error.message };
+        }
+        
         wx.hideLoading();
-        wx.showToast({ title: '生成成功', icon: 'success' });
+        
+        if (saveResult.success) {
+          wx.showToast({ title: '生成成功并已保存', icon: 'success' });
+        } else {
+          wx.showToast({ title: '生成成功但保存失败', icon: 'none' });
+          console.error('保存失败原因:', saveResult.error);
+        }
+        
+        // 清除已选中衣物的勾选状态
+        this.setData({ selectedItems: {} });
       } else {
         wx.hideLoading();
-        const errorMsg = generateResult.result?.error || '生成失败';
+        const errorMsg = generateResult?.error || '生成失败';
         this.showErrorModal('生成失败', errorMsg);
       }
     } catch (error) {
@@ -769,7 +1086,381 @@ Page({
     };
   },
 
+  /**
+   * 开始试衣按钮点击事件处理
+   */
+  async startTryon() {
+    try {
+      // 检查是否已上传人像照片
+      if (!this.data.userImage) {
+        wx.showToast({
+          title: '请先上传人像照片',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+
+      // 检查是否已选中衣物
+      const { selectedItems } = this.data;
+      const hasSelectedClothes = Object.keys(selectedItems).length > 0;
+      
+      if (!hasSelectedClothes) {
+        wx.showToast({
+          title: '请先选择衣物',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+
+      // 生成对应的prompt
+      const prompt = this.generatePrompt(selectedItems);
+      console.log('生成的prompt:', prompt);
+
+      // 调用图片生成功能
+      await this.generateTryon(prompt);
+    } catch (error) {
+      console.error('开始试衣失败:', error);
+      wx.showToast({
+        title: '操作失败，请重试',
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  },
+
+  /**
+   * 根据选中衣物品类生成对应的prompt
+   */
+  generatePrompt(selectedItems) {
+    let prompt = '一个人穿着';
+    
+    Object.values(selectedItems).forEach((item, index) => {
+      if (index > 0) {
+        prompt += '和';
+      }
+      prompt += item.name;
+    });
+    
+    prompt += '，高清照片，真实感，自然光线，正面视角';
+    return prompt;
+  },
+
+  /**
+   * 调用混元生图API生成试衣效果
+   */
+  async hunyuanGenerateImage({ prompt, userImage, clothImages }) {
+    // 这里实现调用混元生图3.0大模型的逻辑
+    // 由于是模拟实现，返回一个示例结果
+    return new Promise((resolve) => {
+      // 模拟生成过程
+      setTimeout(() => {
+        resolve({
+          imageUrl: 'https://example.com/tryon-result.jpg', // 示例图片URL
+          success: true
+        });
+      }, 2000);
+    });
+  },
+
+  /**
+   * 保存试衣结果到云存储和数据库
+   */
+  async saveTryonResult(imageUrl) {
+    try {
+      const openid = wx.getStorageSync('openid');
+      if (!openid) {
+        console.error('用户未登录，无法保存试衣结果');
+        return {
+          success: false,
+          error: '用户未登录'
+        };
+      }
+      
+      // 1. 生成唯一的文件名
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substr(2, 9);
+      const fileExt = imageUrl.split('.').pop() || 'jpg';
+      const cloudPath = `tryon-results/${openid}/${timestamp}_${randomStr}.${fileExt}`;
+      
+      console.log('开始保存试衣结果:', {
+        cloudPath,
+        imageUrl
+      });
+      
+      // 2. 下载图片到临时路径
+      const downloadResult = await wx.downloadFile({
+        url: imageUrl
+      });
+      
+      if (downloadResult.statusCode !== 200) {
+        throw new Error('图片下载失败');
+      }
+      
+      const tempFilePath = downloadResult.tempFilePath;
+      
+      // 3. 上传图片到云存储
+      const uploadResult = await wx.cloud.uploadFile({
+        cloudPath,
+        filePath: tempFilePath
+      });
+      
+      if (!uploadResult.fileID) {
+        throw new Error('图片上传失败');
+      }
+      
+      const fileID = uploadResult.fileID;
+      console.log('图片上传成功，fileID:', fileID);
+      
+      // 4. 创建数据库记录
+      const db = wx.cloud.database();
+      const tryonRecord = {
+        openid,
+        tryon_time: new Date(),
+        image_file_id: fileID,
+        is_favorite: false,
+        create_time: db.serverDate()
+      };
+      
+      const dbResult = await db.collection('tryon_record').add({
+        data: tryonRecord
+      });
+      
+      console.log('数据库记录创建成功，_id:', dbResult._id);
+      
+      // 5. 返回成功结果
+      return {
+        success: true,
+        fileID,
+        recordId: dbResult._id
+      };
+    } catch (error) {
+      console.error('保存试衣结果失败:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * 带重试机制的保存试衣结果方法
+   */
+  async saveTryonResultWithRetry(imageUrl, maxRetries = 3, retryDelay = 1000) {
+    let lastError;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(`保存试衣结果，尝试 ${attempt}/${maxRetries}`);
+      
+      try {
+        const result = await this.saveTryonResult(imageUrl);
+        
+        if (result.success) {
+          return result;
+        } else {
+          // 检查是否是可重试的错误
+          const isRetryable = this.isRetryableError(result.error);
+          if (!isRetryable) {
+            return result;
+          }
+          
+          lastError = result.error;
+          console.log(`尝试 ${attempt} 失败，错误: ${result.error}，将重试...`);
+        }
+      } catch (error) {
+        lastError = error.message;
+        console.log(`尝试 ${attempt} 异常，错误: ${error.message}，将重试...`);
+      }
+      
+      // 等待一段时间后重试
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+    
+    // 所有尝试都失败
+    return {
+      success: false,
+      error: lastError || '保存失败，已达到最大重试次数'
+    };
+  },
+
+  /**
+   * 检查错误是否可重试
+   */
+  isRetryableError(errorMessage) {
+    const retryableErrors = [
+      '网络',
+      'timeout',
+      '超时',
+      'connection',
+      '连接',
+      'upload',
+      '上传',
+      'download',
+      '下载',
+      'server',
+      '服务器'
+    ];
+    
+    return retryableErrors.some(keyword => 
+      errorMessage.toLowerCase().includes(keyword.toLowerCase())
+    );
+  },
+
+  /**
+   * 长按保存试衣结果图片
+   */
+  saveTryonResultImage() {
+    if (!this.data.generatedImage) {
+      return;
+    }
+    
+    wx.showActionSheet({
+      itemList: ['保存图片到相册'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          wx.showLoading({ title: '保存中...' });
+          
+          // 这里实现保存图片到相册的逻辑
+          // 由于是模拟实现，仅打印日志并显示成功提示
+          setTimeout(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存成功', icon: 'success' });
+            console.log('保存试衣结果到相册:', this.data.generatedImage);
+          }, 1000);
+        }
+      },
+      fail: (error) => {
+        console.error('保存图片失败:', error);
+      }
+    });
+  },
+
   handleError() {
     this.setData({ error: null });
+  },
+
+  // 背景图片加载完成
+  onBackgroundImageLoad() {
+    this.setData({ backgroundImageLoading: false });
+  },
+
+  // 背景图片加载失败
+  onBackgroundImageError() {
+    this.setData({ 
+      backgroundImageLoading: false,
+      backgroundImageError: true 
+    });
+  },
+
+
+
+  // 触摸开始事件
+  onTouchStart(e) {
+    this.setData({
+      touchStartX: e.touches[0].clientX,
+      touchStartY: e.touches[0].clientY,
+      isSwiping: true
+    });
+  },
+
+  // 触摸移动事件
+  onTouchMove(e) {
+    if (!this.data.isSwiping) return;
+    
+    const { touchStartX, categories, activeCategory } = this.data;
+    const currentX = e.touches[0].clientX;
+    const deltaX = currentX - touchStartX;
+    
+    this.setData({
+      touchEndX: currentX,
+      touchEndY: e.touches[0].clientY
+    });
+    
+    // 边缘高亮提示逻辑
+    const currentIndex = categories.indexOf(activeCategory);
+    
+    if (deltaX > 0 && currentIndex === 0) {
+      // 向右滑动到最右侧页面，显示右侧边缘提示
+      this.setData({ showLeftEdgeHint: true });
+    } else if (deltaX < 0 && currentIndex === categories.length - 1) {
+      // 向左滑动到最左侧页面，显示左侧边缘提示
+      this.setData({ showRightEdgeHint: true });
+    } else {
+      // 重置边缘提示
+      this.setData({ 
+        showLeftEdgeHint: false, 
+        showRightEdgeHint: false 
+      });
+    }
+  },
+
+  // 触摸结束事件
+  onTouchEnd(e) {
+    if (!this.data.isSwiping) return;
+    
+    const { touchStartX, touchEndX, touchStartY, touchEndY, categories, activeCategory } = this.data;
+    
+    // 计算滑动距离和角度
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const angle = Math.abs(Math.atan2(deltaY, deltaX) * 180 / Math.PI);
+    
+    // 定义滑动阈值
+    const SWIPE_THRESHOLD = 50; // 最小滑动距离
+    const ANGLE_THRESHOLD = 30; // 最大角度偏差
+    
+    // 确保是水平滑动
+    if (Math.abs(angle) < ANGLE_THRESHOLD || Math.abs(angle) > 150) {
+      // 检测有效的左右滑动
+      if (Math.abs(deltaX) > SWIPE_THRESHOLD && distance > SWIPE_THRESHOLD) {
+        const currentIndex = categories.indexOf(activeCategory);
+        
+        if (deltaX > 0 && currentIndex > 0) {
+          // 向右滑动，切换到上一个分类
+          this.selectCategoryByIndex(currentIndex - 1);
+        } else if (deltaX < 0 && currentIndex < categories.length - 1) {
+          // 向左滑动，切换到下一个分类
+          this.selectCategoryByIndex(currentIndex + 1);
+        }
+      }
+    }
+    
+    // 延迟隐藏边缘提示
+    setTimeout(() => {
+      this.setData({ 
+        showLeftEdgeHint: false, 
+        showRightEdgeHint: false 
+      });
+    }, 250);
+    
+    // 重置滑动状态
+    this.setData({
+      isSwiping: false,
+      touchStartX: 0,
+      touchStartY: 0,
+      touchEndX: 0,
+      touchEndY: 0
+    });
+  },
+
+  // 根据索引选择分类
+  selectCategoryByIndex(index) {
+    const { categories } = this.data;
+    if (index >= 0 && index < categories.length) {
+      const category = categories[index];
+      
+      // 添加过渡动画效果
+      this.setData({
+        activeCategory: category,
+        scrollIntoViewId: `category-${category}`
+      });
+      
+      // 滚动到分类顶部
+      this.scrollToCategoryTop(category);
+    }
   }
 });

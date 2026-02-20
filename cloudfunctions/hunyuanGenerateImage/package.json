@@ -1,0 +1,22 @@
+{
+  "name": "hunyuanGenerateImage",
+  "version": "1.0.0",
+  "description": "调用混元 3.0 生图 API 的云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hunyuan",
+    "ai",
+    "image",
+    "generation",
+    "tencentcloud"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "^2.0.0",
+    "axios": "^1.6.0"
+  }
+}

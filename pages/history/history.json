@@ -1,1 +1,4 @@
-{ "navigationBarTitleText": "试衣记录" }
+{
+  "navigationBarTitleText": "试衣记录",
+  "usingComponents": {}
+}

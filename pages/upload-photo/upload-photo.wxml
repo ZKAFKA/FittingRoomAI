@@ -1,1 +1,2 @@
-<view class="page"><text>开发中...</text></view>
+<!--pages/upload-photo/upload-photo.wxml-->
+<text>{{langData.uploadPhoto.developing || 'pages/upload-photo/upload-photo.wxml'}}</text>

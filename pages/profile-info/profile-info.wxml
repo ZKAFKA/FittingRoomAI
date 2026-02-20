@@ -1,0 +1,124 @@
+<view class="page" bindtap="handleOutsideClick">
+
+  <!-- 信息列表 -->
+  <view class="info-list">
+    <!-- 头像 -->
+    <view class="info-item">
+      <text class="info-label">{{langData.profile.avatar || '头像'}}</text>
+      <view class="info-value">
+        <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatarUrl}}" mode="aspectFill" catchtap="chooseAvatar"></image>
+      </view>
+    </view>
+
+    <!-- 用户名 -->
+    <view class="info-item">
+      <text class="info-label">{{langData.profile.userName || '用户名'}}</text>
+      <view class="info-value">
+        <view wx:if="{{!editStates.nickName}}" class="display-text" catchtap="enterEditState" data-field="nickName">
+          <text>{{userInfo.nickName || (langData.profile.enterUserName || '请输入用户名')}}</text>
+        </view>
+        <input 
+          wx:else 
+          class="info-input edit-mode" 
+          value="{{userInfo.nickName}}" 
+          bindinput="onNickNameChange" 
+          placeholder="{{langData.profile.enterUserName || '请输入用户名'}}"
+          placeholder-class="info-input-placeholder"
+          data-field="nickName"
+          bindblur="handleBlur"
+          catchtap=""
+          focus="{{true}}"
+        />
+      </view>
+    </view>
+
+    <!-- 性别 -->
+    <view class="info-item">
+      <text class="info-label">{{langData.profile.gender || '性别'}}</text>
+      <view class="info-value">
+        <text class="info-text" catchtap="showGenderPicker">{{userInfo.gender === 'Male' ? '男' : userInfo.gender === 'Female' ? '女' : langData.profile.selectGender || '未设置'}}</text>
+      </view>
+    </view>
+
+    <!-- 身高 -->
+    <view class="info-item">
+      <text class="info-label">{{langData.profile.height || '身高'}}</text>
+      <view class="info-value">
+        <view wx:if="{{!editStates.height}}" class="display-text" catchtap="enterEditState" data-field="height">
+          <text>{{userInfo.height || (langData.profile.enterHeight || '请输入身高')}}</text>
+        </view>
+        <input 
+          wx:else 
+          class="info-input edit-mode" 
+          value="{{userInfo.height}}" 
+          bindinput="onHeightChange" 
+          placeholder="{{langData.profile.enterHeight || '请输入身高'}}"
+          placeholder-class="info-input-placeholder"
+          type="number"
+          data-field="height"
+          bindblur="handleBlur"
+          catchtap=""
+          focus="{{true}}"
+        />
+        <text class="info-unit" wx:if="{{!editStates.height}}">cm</text>
+      </view>
+    </view>
+
+    <!-- 体重 -->
+    <view class="info-item">
+      <text class="info-label">{{langData.profile.weight || '体重'}}</text>
+      <view class="info-value">
+        <view wx:if="{{!editStates.weight}}" class="display-text" catchtap="enterEditState" data-field="weight">
+          <text>{{userInfo.weight || (langData.profile.enterWeight || '请输入体重')}}</text>
+        </view>
+        <input 
+          wx:else 
+          class="info-input edit-mode" 
+          value="{{userInfo.weight}}" 
+          bindinput="onWeightChange" 
+          placeholder="{{langData.profile.enterWeight || '请输入体重'}}"
+          placeholder-class="info-input-placeholder"
+          type="number"
+          data-field="weight"
+          bindblur="handleBlur"
+          catchtap=""
+          focus="{{true}}"
+        />
+        <text class="info-unit" wx:if="{{!editStates.weight}}">kg</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 性别选择弹窗 -->
+  <view class="modal-overlay {{showGenderModal ? 'show' : ''}}" catchtouchmove="preventMove">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">{{langData.profile.gender || '性别'}}</text>
+        <view class="modal-close" bindtap="hideGenderModal">✕</view>
+      </view>
+      <view class="modal-body">
+        <view class="gender-option" bindtap="selectGender" data-gender="Male">
+          <text class="gender-text">男</text>
+          <view class="gender-check {{userInfo.gender === 'Male' ? 'active' : ''}}">
+            <image src="/assets/icons/checkmark.png" mode="aspectFit"></image>
+          </view>
+        </view>
+        <view class="gender-option" bindtap="selectGender" data-gender="Female">
+          <text class="gender-text">女</text>
+          <view class="gender-check {{userInfo.gender === 'Female' ? 'active' : ''}}">
+            <image src="/assets/icons/checkmark.png" mode="aspectFit"></image>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideGenderModal">{{langData.common.cancel || '取消'}}</view>
+        <view class="btn-confirm" bindtap="confirmGender">{{langData.common.confirm || '确定'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提示弹窗 -->
+  <view class="toast" wx:if="{{showToast}}">
+    <text class="toast-text">{{toastMessage}}</text>
+  </view>
+</view>

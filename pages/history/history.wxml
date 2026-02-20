@@ -1,1 +1,134 @@
-<view class="page"><text>开发中...</text></view>
+<view class="page">
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="header-content">
+      <view class="header-top">
+        <view class="header-left">
+          <text class="page-title">{{langData.history.title || '试衣记录'}}</text>
+        </view>
+      </view>
+      
+      <!-- 搜索栏和按钮行 -->
+      <view class="search-bar-row">
+        <!-- 搜索栏 -->
+        <view class="search-bar {{showSearch ? 'show' : ''}}">
+          <view class="search-input-wrap">
+            <image class="search-icon" src="/assets/icons/search.png"></image>
+            <input 
+              class="search-input" 
+              placeholder="{{langData.history.search || '搜索记录...'}}" 
+              placeholder-class="search-placeholder"
+              value="{{searchKeyword}}"
+              bindinput="onSearchInput"
+              confirm-type="search"
+              bindconfirm="doSearch"
+            />
+            <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="clearSearch">✕</text>
+          </view>
+        </view>
+        
+        <!-- 按钮组 -->
+        <view class="button-group">
+          <view class="filter-btn {{filterOptions.dateRange !== 'all' ? 'active' : ''}}" bindtap="toggleFilterModal">
+            <image class="menu-btn-icon" src="/assets/icons/filter.png"></image>
+          </view>
+          <view class="favorate-btn {{filterOptions.favorite ? 'active' : ''}}" bindtap="toggleFavoriteList">
+            <image class="menu-btn-icon" src="{{filterOptions.favorite ? '/assets/icons/favorate-active.png' : '/assets/icons/favorate.png'}}"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 呼吸光特效 -->
+    <view class="header-glow"></view>
+  </view>
+  
+  <!-- 筛选弹窗 -->
+  <view class="modal-overlay {{showFilterModal ? 'show' : ''}}" catchtouchmove="preventMove">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">{{langData.history.filterTitle || '筛选记录'}}</text>
+      </view>
+      <view class="modal-body">
+        <view class="filter-option" bindtap="selectDateRange" data-range="all">
+          <text class="option-text">{{langData.history.all || '全部'}}</text>
+          <view class="option-radio {{filterOptions.dateRange === 'all' ? 'active' : ''}}"></view>
+        </view>
+        <view class="filter-option" bindtap="selectDateRange" data-range="today">
+          <text class="option-text">{{langData.history.today || '今天'}}</text>
+          <view class="option-radio {{filterOptions.dateRange === 'today' ? 'active' : ''}}"></view>
+        </view>
+        <view class="filter-option" bindtap="selectDateRange" data-range="7days">
+          <text class="option-text">{{langData.history.sevenDays || '7天内'}}</text>
+          <view class="option-radio {{filterOptions.dateRange === '7days' ? 'active' : ''}}"></view>
+        </view>
+        <view class="filter-option" bindtap="selectDateRange" data-range="30days">
+          <text class="option-text">{{langData.history.oneMonth || '一个月内'}}</text>
+          <view class="option-radio {{filterOptions.dateRange === '30days' ? 'active' : ''}}"></view>
+        </view>
+        <view class="filter-option" bindtap="selectDateRange" data-range="180days">
+          <text class="option-text">{{langData.history.halfYear || '半年内'}}</text>
+          <view class="option-radio {{filterOptions.dateRange === '180days' ? 'active' : ''}}"></view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideFilterModal">{{langData.common.cancel || '取消'}}</view>
+        <view class="btn-confirm" bindtap="confirmFilter">{{langData.common.confirm || '确认'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 试衣记录网格 -->
+  <view class="clothes-grid">
+    <view 
+      class="cloth-card" 
+      wx:for="{{fittingHistory.thisWeek}}" 
+      wx:key="id" 
+      bindtap="handleCardTap"
+      data-id="{{item.id}}"
+    >
+      <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" bindtap="previewImage" data-image-url="{{item.imageUrl}}" lazy-load="true" />
+      <view class="cloth-info">
+        <text class="cloth-category">{{langData.history.tryonRecord || '试衣记录'}}</text>
+        <text class="cloth-name">{{item.date}}</text>
+      </view>
+      <view class="cloth-delete" catchtap="handleFavoriteTap" data-id="{{item.id}}" data-section="thisWeek">
+        <image class="favorite-icon" src="{{item.isFavorite ? '/assets/icons/heart-filled.png' : '/assets/icons/heart-outline.png'}}"></image>
+      </view>
+    </view>
+    
+    <view 
+      class="cloth-card" 
+      wx:for="{{fittingHistory.lastMonth}}" 
+      wx:key="id" 
+      bindtap="handleCardTap"
+      data-id="{{item.id}}"
+    >
+      <image class="cloth-image" src="{{item.imageUrl}}" mode="aspectFill" bindtap="previewImage" data-image-url="{{item.imageUrl}}" lazy-load="true" />
+      <view class="cloth-info">
+        <text class="cloth-category">{{langData.history.tryonRecord || '试衣记录'}}</text>
+        <text class="cloth-name">{{item.date}}</text>
+      </view>
+      <view class="cloth-delete" catchtap="handleFavoriteTap" data-id="{{item.id}}" data-section="lastMonth">
+        <image class="favorite-icon" src="{{item.isFavorite ? '/assets/icons/heart-filled.png' : '/assets/icons/heart-outline.png'}}"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{fittingHistory.thisWeek.length === 0 && fittingHistory.lastMonth.length === 0}}">
+    <text class="empty-icon">📸</text>
+    <text class="empty-text">{{langData.history.noRecords || '无试衣记录'}}</text>
+    <text class="empty-hint">{{langData.history.startTryonHint || '点击右下角按钮开始试衣'}}</text>
+  </view>
+
+
+
+  <!-- 悬浮添加按钮 -->
+  <view class="fab-container" bindtap="handleFabTap">
+    <view class="fab-btn">
+      <view class="fab-glow"></view>
+      <image class="fab-icon" src="/assets/icons/plus.png"></image>
+    </view>
+  </view>
+</view>

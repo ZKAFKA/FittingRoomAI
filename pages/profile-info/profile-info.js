@@ -19,7 +19,7 @@ Page({
       height: '',
       weight: ''
     },
-    // 默认头像URL
+    // 默认头像云存储地址
     defaultAvatarUrl: '',
     // 语言数据
     langData: i18n.getLangData(),
@@ -32,7 +32,6 @@ Page({
     isActiveSave: false,
     // 编辑状态
     editStates: {
-      nickName: false,
       height: false,
       weight: false
     }
@@ -41,21 +40,23 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function (options) {
+  onLoad: async function (options) {
     // 初始化语言管理
     this.initLanguage();
     // 获取默认头像URL
-    this.getAvatarUrl();
+    await this.getAvatarUrl();
     // 加载用户信息
-    this.loadUserInfo();
+    await this.loadUserInfo();
+    // 同步微信昵称
+    this.syncWechatNickName();
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function () {
+  onShow: async function () {
     // 页面显示时重新加载用户信息，确保数据准确性
-    this.loadUserInfo();
+    await this.loadUserInfo();
   },
 
   /**
@@ -84,12 +85,20 @@ Page({
   hasUserInfoChanged() {
     const { userInfo, initialUserInfo } = this.data;
     
-    // 比较每个字段
-    return userInfo.nickName !== initialUserInfo.nickName ||
-           (userInfo.avatarFileID || userInfo.avatarUrl) !== (initialUserInfo.avatarFileID || initialUserInfo.avatarUrl) ||
-           userInfo.gender !== initialUserInfo.gender ||
+    console.log('比较用户信息变化:');
+    console.log('当前用户信息:', userInfo);
+    console.log('初始用户信息:', initialUserInfo);
+    console.log('gender变化:', userInfo.gender !== initialUserInfo.gender);
+    console.log('height变化:', userInfo.height !== initialUserInfo.height);
+    console.log('weight变化:', userInfo.weight !== initialUserInfo.weight);
+    
+    // 比较可修改的字段（排除昵称和头像，因为这些字段不可修改）
+    const hasChanged = userInfo.gender !== initialUserInfo.gender ||
            userInfo.height !== initialUserInfo.height ||
            userInfo.weight !== initialUserInfo.weight;
+    
+    console.log('用户信息是否有变化:', hasChanged);
+    return hasChanged;
   },
 
   /**
@@ -123,8 +132,9 @@ Page({
    * 获取默认头像URL
    */
   async getAvatarUrl() {
+    const defaultAvatarFileID = 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg';
+    
     try {
-      const defaultAvatarFileID = 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg';
       const res = await wx.cloud.getTempFileURL({
         fileList: [defaultAvatarFileID]
       });
@@ -132,9 +142,21 @@ Page({
         this.setData({
           defaultAvatarUrl: res.fileList[0].tempFileURL
         });
+        console.log('默认头像URL获取成功:', res.fileList[0].tempFileURL);
+      } else {
+        // 如果获取失败，直接使用云存储地址作为默认值
+        this.setData({
+          defaultAvatarUrl: defaultAvatarFileID
+        });
+        console.log('默认头像URL获取失败，使用云存储地址作为默认值:', defaultAvatarFileID);
       }
     } catch (error) {
       console.error('获取默认头像链接失败:', error);
+      // 发生错误时，直接使用云存储地址作为默认值
+      this.setData({
+        defaultAvatarUrl: defaultAvatarFileID
+      });
+      console.log('获取默认头像失败，使用云存储地址作为默认值:', defaultAvatarFileID);
     }
   },
 
@@ -144,11 +166,15 @@ Page({
   async loadUserInfo() {
     try {
       const openid = wx.getStorageSync('openid');
+      console.log('加载用户信息时的openid:', openid);
+      
       if (openid) {
         // 加载用户基本信息
+        console.log('开始查询用户信息...');
         const userRes = await wx.cloud.database().collection('users')
           .where({ openid })
           .get();
+        console.log('用户信息查询结果:', userRes);
         
         let userData = {};
         if (userRes.data.length > 0) {
@@ -173,14 +199,31 @@ Page({
           console.error('加载身体信息失败:', bodyError);
         }
 
+        // 默认头像云存储地址
+        const defaultAvatarFileID = 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg';
+        
+        // 检查并修复用户数据中的头像地址
+        let avatarUrl = userData.customAvatarUrl || userData.avatarUrl;
+        let avatarFileID = userData.customAvatarUrl || userData.avatarUrl;
+        
+        // 如果头像地址是本地地址，替换为默认的云存储地址
+        if (avatarUrl && avatarUrl.includes('/assets/images/')) {
+          avatarUrl = defaultAvatarFileID;
+          avatarFileID = defaultAvatarFileID;
+          console.log('修复本地头像地址为云存储地址:', avatarUrl);
+        }
+        
         const userInfoData = {
-          nickName: userData.customNickName || userData.nickName || '',
-          avatarUrl: (userData.customAvatarUrl && userData.customAvatarUrl.indexOf('/assets/images/') === -1) ? userData.customAvatarUrl : (userData.avatarUrl && userData.avatarUrl.indexOf('/assets/images/') === -1) ? userData.avatarUrl : '',
-          avatarFileID: userData.customAvatarUrl || userData.avatarUrl, // 保存原始avatarUrl作为fileID
+          nickName: userData.nickName || '',
+          avatarUrl: avatarUrl || defaultAvatarFileID,
+          avatarFileID: avatarFileID || defaultAvatarFileID, // 保存原始avatarUrl作为fileID
           gender,
           height,
           weight
         };
+        
+        console.log('加载的用户数据:', userData);
+        console.log('构建的用户信息:', userInfoData);
         
         this.setData({
           userInfo: userInfoData,
@@ -195,75 +238,8 @@ Page({
     }
   },
 
-  /**
-   * 选择头像
-   */
-  chooseAvatar() {
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
-      success: async (res) => {
-        const tempFilePaths = res.tempFilePaths;
-        const openid = wx.getStorageSync('openid');
-        
-        try {
-          wx.showLoading({ title: '上传中...' });
-          
-          // 生成文件路径
-          const timestamp = Date.now();
-          const fileExt = tempFilePaths[0].split('.').pop();
-          const cloudPath = `user-avatar/${openid}-avatar.${fileExt}`;
-          
-          // 上传到云存储
-          const uploadRes = await wx.cloud.uploadFile({
-            cloudPath,
-            filePath: tempFilePaths[0]
-          });
-          
-          if (uploadRes.fileID) {
-            // 获取临时文件URL
-            const urlRes = await wx.cloud.getTempFileURL({
-              fileList: [uploadRes.fileID]
-            });
-            
-            if (urlRes.fileList.length > 0 && urlRes.fileList[0].tempFileURL) {
-              const avatarUrl = urlRes.fileList[0].tempFileURL;
-              
-              // 只更新本地数据，不立即更新数据库
-              this.setData({
-                'userInfo.avatarUrl': avatarUrl,
-                'userInfo.avatarFileID': uploadRes.fileID // 保存fileID用于后续保存
-              });
-              
-              wx.hideLoading();
-              this.showToast('头像更新成功');
-            } else {
-              throw new Error('获取头像链接失败');
-            }
-          } else {
-            throw new Error('上传失败');
-          }
-        } catch (error) {
-          console.error('上传头像失败:', error);
-          wx.hideLoading();
-          this.showToast('上传失败，请重试');
-        }
-      }
-    });
-  },
+  // 头像和昵称修改功能已删除，用户头像不可修改，用户昵称同步微信账号昵称
 
-  /**
-   * 用户名输入变化
-   */
-  onNickNameChange(e) {
-    console.log('用户名输入变化:', e.detail.value);
-    this.setData({
-      'userInfo.nickName': e.detail.value
-    }, () => {
-      console.log('用户名更新完成:', this.data.userInfo.nickName);
-    });
-  },
 
   /**
    * 显示性别选择弹窗
@@ -327,7 +303,6 @@ Page({
     // 退出所有编辑状态
     this.setData({
       editStates: {
-        nickName: false,
         height: false,
         weight: false
       }
@@ -376,7 +351,6 @@ Page({
     console.log('进入编辑状态:', field);
     // 退出其他字段的编辑状态
     const editStates = {
-      nickName: false,
       height: false,
       weight: false
     };
@@ -395,13 +369,12 @@ Page({
     this.setData({ [`editStates.${field}`]: false });
     console.log('编辑完成，退出编辑状态:', field);
     
-    // 立即保存到数据库，避免onUnload时间限制问题
-    if (this.hasUserInfoChanged()) {
-      console.log('检测到数据变化，立即保存到数据库...');
-      this.setData({ isActiveSave: false });
-      const success = await this.saveProfile();
-      console.log('编辑保存完成:', field, '结果:', success);
-    }
+    // 强制保存到数据库，不依赖hasUserInfoChanged的判断
+    console.log('强制保存到数据库，字段:', field);
+    console.log('当前用户信息:', this.data.userInfo);
+    this.setData({ isActiveSave: false });
+    const success = await this.saveProfile();
+    console.log('编辑保存完成:', field, '结果:', success);
   },
 
 
@@ -422,6 +395,8 @@ Page({
     
     try {
       const openid = wx.getStorageSync('openid');
+      console.log('获取到的openid:', openid);
+      
       if (!openid) {
         this.showToast('请先登录');
         return false;
@@ -439,11 +414,14 @@ Page({
         weight,
         retryCount
       });
+      
+      // 测试数据库连接
+      const db = wx.cloud.database();
+      console.log('数据库连接成功:', db);
 
       wx.showLoading({ title: '保存中...' });
 
       // 保存用户基本信息
-      const db = wx.cloud.database();
       const userCollection = db.collection('users');
       
       console.log(`[${timestamp}] 查询用户信息...`);
@@ -458,42 +436,38 @@ Page({
       
       const now = new Date();
       
+      // 默认头像云存储地址
+      const defaultAvatarFileID = 'cloud://fittingroom-0g0zcm3w1d2f40c5.6669-fittingroom-0g0zcm3w1d2f40c5-1400377926/system-images/default-avatar.jpg';
+      
       const userUpdateData = {
-        customNickName: nickName,
         updateTime: now
       };
-      
-      // 如果有头像文件ID，添加到更新数据中
-      if (avatarFileID) {
-        userUpdateData.customAvatarUrl = avatarFileID;
-      }
       
       try {
         if (userRes.data.length > 0) {
           console.log(`[${timestamp}] 更新用户信息...`);
+          console.log(`[${timestamp}] 用户ID:`, userRes.data[0]._id);
           console.log(`[${timestamp}] 更新数据:`, userUpdateData);
-          await userCollection.doc(userRes.data[0]._id).update({
+          const updateResult = await userCollection.doc(userRes.data[0]._id).update({
             data: userUpdateData
           });
+          console.log(`[${timestamp}] 更新用户信息结果:`, updateResult);
           console.log(`[${timestamp}] 更新用户信息成功`);
         } else {
           console.log(`[${timestamp}] 添加用户信息...`);
           console.log(`[${timestamp}] 添加数据:`, {
             openid,
-            customNickName: nickName,
-            ...(avatarFileID && { customAvatarUrl: avatarFileID }),
             createTime: now,
             updateTime: now
           });
-          await userCollection.add({
+          const addResult = await userCollection.add({
             data: {
               openid,
-              customNickName: nickName,
-              ...(avatarFileID && { customAvatarUrl: avatarFileID }),
               createTime: now,
               updateTime: now
             }
           });
+          console.log(`[${timestamp}] 添加用户信息结果:`, addResult);
           console.log(`[${timestamp}] 添加用户信息成功`);
         }
       } catch (userSaveError) {
@@ -551,10 +525,13 @@ Page({
       }
 
       // 更新初始用户信息，以便下次比较时能够正确判断是否有修改
-      this.setData({
-        initialUserInfo: { ...this.data.userInfo }
-      }, () => {
-        console.log(`[${timestamp}] 初始用户信息更新完成:`, this.data.initialUserInfo);
+      await new Promise((resolve) => {
+        this.setData({
+          initialUserInfo: { ...this.data.userInfo }
+        }, () => {
+          console.log(`[${timestamp}] 初始用户信息更新完成:`, this.data.initialUserInfo);
+          resolve();
+        });
       });
       
       wx.hideLoading();
@@ -629,6 +606,73 @@ Page({
         showToast: false
       });
     }, 2000);
+  },
+
+  /**
+   * 同步微信昵称
+   */
+  syncWechatNickName() {
+    // 获取微信用户信息，同步昵称
+    wx.getUserProfile({
+      desc: '用于同步微信昵称',
+      success: (res) => {
+        const wechatNickName = res.userInfo.nickName;
+        const wechatAvatarUrl = res.userInfo.avatarUrl;
+        
+        console.log('同步微信昵称:', wechatNickName);
+        console.log('同步微信头像:', wechatAvatarUrl);
+        
+        // 更新用户信息
+        this.setData({
+          'userInfo.nickName': wechatNickName,
+          'userInfo.avatarUrl': wechatAvatarUrl,
+          'userInfo.avatarFileID': wechatAvatarUrl
+        });
+        
+        // 保存到数据库
+        this.saveWechatInfo(wechatNickName, wechatAvatarUrl);
+      },
+      fail: (error) => {
+        console.error('获取微信用户信息失败:', error);
+      }
+    });
+  },
+
+  /**
+   * 保存微信信息到数据库
+   */
+  async saveWechatInfo(nickName, avatarUrl) {
+    try {
+      const openid = wx.getStorageSync('openid');
+      if (!openid) {
+        return;
+      }
+      
+      const db = wx.cloud.database();
+      const userCollection = db.collection('users');
+      
+      // 查询用户信息
+      const userRes = await userCollection.where({ openid }).get();
+      
+      const now = new Date();
+      const updateData = {
+        nickName: nickName,
+        avatarUrl: avatarUrl,
+        updateTime: now
+      };
+      
+      if (userRes.data.length > 0) {
+        // 更新用户信息
+        await userCollection.doc(userRes.data[0]._id).update({ data: updateData });
+      } else {
+        // 添加用户信息
+        await userCollection.add({ data: { openid, ...updateData, createTime: now } });
+      }
+      
+      console.log('微信信息保存成功');
+    } catch (error) {
+      console.error('保存微信信息失败:', error);
+    }
   },
 
   /**

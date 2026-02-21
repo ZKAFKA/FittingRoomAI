@@ -91,6 +91,7 @@
   display: flex;
   align-items: center;
   flex: 1;
+  width: 100rpx;
   justify-content: flex-end;
 }
 
@@ -116,7 +117,7 @@
   transition: all 0.3s ease;
   animation: input-focus 0.3s ease;
   text-align: right;
-  flex: 1;
+  max-width: 100rpx;
   z-index: 10;
   position: relative;
   cursor: text;
@@ -150,7 +151,8 @@
   position: relative;
 }
 
-.display-text:hover {
+/* 取消鼠标悬浮特效 */
+/* .display-text:hover {
   background-color: #f5f5f5;
   border-radius: 8rpx;
   padding: 12rpx 16rpx;
@@ -161,6 +163,7 @@
   transform: translateX(-2rpx);
   background-color: #e8f5e9;
 }
+*/
 
 .info-input-placeholder {
   color: #999999;
@@ -169,7 +172,9 @@
 .info-text {
   font-size: 32rpx;
   color: #333333;
+  width: 100rpx;
   margin-right: 16rpx;
+  text-align: right;
 }
 
 .info-unit {
@@ -363,6 +368,7 @@
   .info-input.edit-mode {
     padding: 8rpx 12rpx;
     border-radius: 6rpx;
+    max-width: 100rpx;
   }
   
   .display-text:hover {
@@ -425,6 +431,7 @@
   .info-input.edit-mode {
     padding: 16rpx 20rpx;
     border-radius: 10rpx;
+    max-width: 100rpx;
   }
   
   .display-text:hover {

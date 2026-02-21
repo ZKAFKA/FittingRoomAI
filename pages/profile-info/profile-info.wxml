@@ -6,7 +6,7 @@
     <view class="info-item">
       <text class="info-label">{{langData.profile.avatar || '头像'}}</text>
       <view class="info-value">
-        <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatarUrl}}" mode="aspectFill" catchtap="chooseAvatar"></image>
+        <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatarUrl}}" mode="aspectFill"></image>
       </view>
     </view>
 
@@ -14,21 +14,9 @@
     <view class="info-item">
       <text class="info-label">{{langData.profile.userName || '用户名'}}</text>
       <view class="info-value">
-        <view wx:if="{{!editStates.nickName}}" class="display-text" catchtap="enterEditState" data-field="nickName">
+        <view class="display-text">
           <text>{{userInfo.nickName || (langData.profile.enterUserName || '请输入用户名')}}</text>
         </view>
-        <input 
-          wx:else 
-          class="info-input edit-mode" 
-          value="{{userInfo.nickName}}" 
-          bindinput="onNickNameChange" 
-          placeholder="{{langData.profile.enterUserName || '请输入用户名'}}"
-          placeholder-class="info-input-placeholder"
-          data-field="nickName"
-          bindblur="handleBlur"
-          catchtap=""
-          focus="{{true}}"
-        />
       </view>
     </view>
 

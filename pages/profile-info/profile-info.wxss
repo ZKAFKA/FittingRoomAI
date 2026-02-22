@@ -459,3 +459,55 @@
     font-size: 36rpx;
   }
 }
+
+/* 注销账户样式 */
+.logout-container {
+  position: fixed;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 0;
+}
+
+.logout-link {
+  font-size: 24rpx;
+  color: #990000;
+  text-decoration: underline;
+  transition: all 0.3s ease;
+}
+
+.logout-link:active {
+  color: #cc0000;
+  opacity: 0.8;
+}
+
+/* 注销弹窗样式 */
+.logout-warning {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #333333;
+  text-align: left;
+}
+
+.btn-danger {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: #990000;
+  color: #ffffff;
+  margin-left: 16rpx;
+}
+
+.btn-danger:active {
+  background: #cc0000;
+  transform: scale(0.98);
+}

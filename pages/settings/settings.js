@@ -3,12 +3,15 @@ const i18n = require('../../utils/i18n');
 
 Page({
   data: {
-    // 页面状态
-    notificationsEnabled: true,
+    // 页面状态 - 默认偏好设置全部为关闭状态
+    fitOptimizationEnabled: false,
+    faceProtectionEnabled: false,
+    backgroundRemovalEnabled: false,
     currentLanguage: 'English',
     currentLanguageCode: 'en',
     currentMeasurementUnits: 'cm / kg',
     showLanguageModal: false,
+    showFeedbackModal: false,
     // 当前语言数据
     langData: i18n.getLangData()
   },
@@ -82,7 +85,18 @@ Page({
    * 加载设置数据
    */
   loadSettings() {
-    // 这里可以从本地存储或服务器加载设置
+    // 从本地存储加载偏好设置，如果没有则保持默认关闭状态
+    const fitOptimization = wx.getStorageSync('fitOptimizationEnabled');
+    const faceProtection = wx.getStorageSync('faceProtectionEnabled');
+    const backgroundRemoval = wx.getStorageSync('backgroundRemovalEnabled');
+    
+    // 只有在有存储值时才更新，否则保持默认false
+    this.setData({
+      fitOptimizationEnabled: fitOptimization === true,
+      faceProtectionEnabled: faceProtection === true,
+      backgroundRemovalEnabled: backgroundRemoval === true
+    });
+    
     console.log('Loading settings...');
   },
 
@@ -108,13 +122,33 @@ Page({
   },
 
   /**
-   * 处理通知开关状态变化
+   * 处理试衣效果优化开关状态变化
    */
-  handleNotificationChange(e) {
+  handleFitOptimizationChange(e) {
     const enabled = e.detail.value;
-    this.setData({ notificationsEnabled: enabled });
-    console.log('Notifications enabled:', enabled);
-    // 这里可以保存通知设置
+    this.setData({ fitOptimizationEnabled: enabled });
+    wx.setStorageSync('fitOptimizationEnabled', enabled);
+    console.log('Fit optimization enabled:', enabled);
+  },
+
+  /**
+   * 处理面容保护开关状态变化
+   */
+  handleFaceProtectionChange(e) {
+    const enabled = e.detail.value;
+    this.setData({ faceProtectionEnabled: enabled });
+    wx.setStorageSync('faceProtectionEnabled', enabled);
+    console.log('Face protection enabled:', enabled);
+  },
+
+  /**
+   * 处理背景消除开关状态变化
+   */
+  handleBackgroundRemovalChange(e) {
+    const enabled = e.detail.value;
+    this.setData({ backgroundRemovalEnabled: enabled });
+    wx.setStorageSync('backgroundRemovalEnabled', enabled);
+    console.log('Background removal enabled:', enabled);
   },
 
   /**
@@ -140,8 +174,10 @@ Page({
    */
   handlePrivacyPolicyTap() {
     console.log('Privacy Policy tapped');
-    // 这里可以导航到隐私政策页面
-    wx.showToast({ title: '开发中...', icon: 'none' });
+    // 导航到隐私政策页面
+    wx.navigateTo({
+      url: '/pages/privacy-policy/privacy-policy'
+    });
   },
 
   /**
@@ -151,6 +187,28 @@ Page({
     console.log('Help Center tapped');
     // 这里可以导航到帮助中心页面
     wx.showToast({ title: '开发中...', icon: 'none' });
+  },
+
+  /**
+   * 处理建议与反馈选项点击
+   */
+  handleFeedbackTap() {
+    console.log('Feedback tapped');
+    this.setData({ showFeedbackModal: true });
+  },
+
+  /**
+   * 隐藏建议与反馈弹窗
+   */
+  hideFeedbackModal() {
+    this.setData({ showFeedbackModal: false });
+  },
+
+  /**
+   * 阻止弹窗内容区域冒泡关闭
+   */
+  preventModalClose() {
+    // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
   },
 
   /**
@@ -189,6 +247,13 @@ Page({
    */
   preventMove() {
     // 阻止遮罩层滚动
+  },
+
+  /**
+   * 允许弹窗内容区域滚动
+   */
+  onBodyTouchMove() {
+    // 允许内容区域滚动，不阻止事件
   },
 
   /**
@@ -333,7 +398,7 @@ Page({
       const bodyRes = await bodyCollection.where({ openid }).get();
       
       if (bodyRes.data.length === 0) {
-        // 创建默认身体信息
+        // 创建默认身体信息 - 全部为空
         await bodyCollection.add({
           data: {
             openid,

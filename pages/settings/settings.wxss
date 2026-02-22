@@ -179,7 +179,7 @@
 }
 
 .modal-header {
-  padding: 48rpx 40rpx 24rpx;
+  padding: 32rpx 40rpx 24rpx;
   text-align: center;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
 }
@@ -195,11 +195,19 @@
 .modal-body {
   padding: 0 40rpx;
   max-height: 50vh;
-  overflow-y: auto;
 }
 
-.modal-body::-webkit-scrollbar {
+scroll-view.modal-body {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 隐藏滚动条 */
+scroll-view.modal-body ::-webkit-scrollbar {
   display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 .language-option {
@@ -251,7 +259,7 @@
 
 .modal-footer {
   display: flex;
-  padding: 24rpx 40rpx 48rpx;
+  padding: 32rpx 40rpx 32rpx;
   border-top: 1rpx solid rgba(255, 255, 255, 0.05);
 }
 
@@ -273,5 +281,89 @@
 .btn-cancel:active {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+}
+
+/* 建议与反馈弹窗样式 */
+.feedback-modal {
+  width: 70%;
+  max-width: 480rpx;
+}
+
+.feedback-body {
+  padding: 48rpx 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-content {
+  text-align: center;
+}
+
+.feedback-text {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  word-break: break-all;
+}
+
+.btn-confirm {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
+}
+
+.btn-confirm:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(139, 92, 246, 0.2);
+}
+
+/* 响应式设计 - 建议与反馈弹窗 */
+@media (max-width: 375px) {
+  .feedback-modal {
+    width: 75%;
+    max-width: 400rpx;
+  }
+
+  .feedback-body {
+    padding: 36rpx 32rpx;
+  }
+
+  .feedback-text {
+    font-size: 26rpx;
+  }
+
+  .btn-confirm {
+    height: 72rpx;
+    font-size: 26rpx;
+  }
+}
+
+@media (min-width: 768px) {
+  .feedback-modal {
+    max-width: 520rpx;
+  }
+
+  .feedback-body {
+    padding: 56rpx 48rpx;
+  }
+
+  .feedback-text {
+    font-size: 30rpx;
+  }
+
+  .btn-confirm {
+    height: 88rpx;
+    font-size: 30rpx;
+  }
 }
 

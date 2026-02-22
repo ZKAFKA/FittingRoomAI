@@ -140,7 +140,7 @@
           </view>
           <view class="preview-area" wx:else style="{{previewAreaStyle}}">
             <image class="preview-image" src="{{newClothImage}}" mode="aspectFit" />
-            <view class="preview-change" bindtap="chooseImage">
+            <view class="preview-change" bindtap="chooseImage" wx:if="{{!aiProcessing}}">
               <image class="change-icon" src="/assets/icons/reupload.png" mode="aspectFit" />
             </view>
           </view>
@@ -209,8 +209,8 @@
         <view class="btn-cancel" bindtap="hideAddModal">{{langData.common.cancel || '取消'}}</view>
       </view>
       <view class="modal-footer processed" wx:else>
-        <view class="btn-secondary" bindtap="chooseImage">{{langData.wardrobe.reupload || '重新上传'}}</view>
-        <view class="btn-confirm" bindtap="addToWardrobe">{{langData.wardrobe.addToWardrobe || '加入衣橱'}}</view>
+        <view class="btn-secondary" bindtap="reuploadImage">{{langData.wardrobe.reupload || '重新上传'}}</view>
+        <view class="btn-confirm" bindtap="addToWardrobe">{{langData.wardrobe.save || '保存'}}</view>
       </view>
     </view>
   </view>

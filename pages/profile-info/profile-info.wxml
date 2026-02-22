@@ -3,7 +3,7 @@
   <!-- 信息列表 -->
   <view class="info-list">
     <!-- 头像 -->
-    <view class="info-item">
+    <view class="info-item" catchtap="showAvatarNotSupported">
       <text class="info-label">{{langData.profile.avatar || '头像'}}</text>
       <view class="info-value">
         <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatarUrl}}" mode="aspectFill"></image>
@@ -11,11 +11,11 @@
     </view>
 
     <!-- 用户名 -->
-    <view class="info-item">
+    <view class="info-item" catchtap="showNicknameNotSupported">
       <text class="info-label">{{langData.profile.userName || '用户名'}}</text>
       <view class="info-value">
         <view class="display-text">
-          <text>{{userInfo.nickName || (langData.profile.enterUserName || '请输入用户名')}}</text>
+          <text>{{userInfo.nickName || (langData.profile.enterUserName || '微信用户')}}</text>
         </view>
       </view>
     </view>
@@ -108,5 +108,27 @@
   <!-- 提示弹窗 -->
   <view class="toast" wx:if="{{showToast}}">
     <text class="toast-text">{{toastMessage}}</text>
+  </view>
+
+  <!-- 注销账户链接 -->
+  <view class="logout-container">
+    <text class="logout-link" bindtap="showLogoutConfirm">注销账户</text>
+  </view>
+
+  <!-- 注销确认弹窗 -->
+  <view class="modal-overlay {{showLogoutModal ? 'show' : ''}}" catchtouchmove="preventMove">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">确认注销账户</text>
+        <view class="modal-close" bindtap="hideLogoutModal">✕</view>
+      </view>
+      <view class="modal-body">
+        <text class="logout-warning">您确定要注销当前账户吗？此操作将永久删除您的所有个人数据，包括但不限于个人信息、历史记录和偏好设置，且操作不可恢复。</text>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="hideLogoutModal">取消</view>
+        <view class="btn-danger" bindtap="confirmLogout">确认注销</view>
+      </view>
+    </view>
   </view>
 </view>

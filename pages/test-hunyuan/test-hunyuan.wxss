@@ -1,0 +1,337 @@
+/* 测试混元生图云函数页面样式 */
+.container {
+  padding: 30rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 输入区域 */
+.input-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.prompt-input {
+  width: 100%;
+  height: 160rpx;
+  padding: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+/* 垫图区域 */
+.reference-image-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.upload-area {
+  border: 2rpx dashed #ddd;
+  border-radius: 12rpx;
+  padding: 60rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 60rpx;
+  color: #999;
+  margin-bottom: 10rpx;
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.reference-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reference-img {
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 12rpx;
+  background-color: #f5f5f5;
+  margin-bottom: 16rpx;
+}
+
+.reference-actions {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.reference-tag {
+  font-size: 24rpx;
+  color: #07c160;
+  background-color: #e6f7ed;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.clear-btn {
+  font-size: 24rpx;
+  color: #ff4d4f;
+  padding: 8rpx 16rpx;
+}
+
+/* 参数设置区域 */
+.params-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.toggle-icon {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.params-content {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #eee;
+}
+
+.param-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.param-item:last-child {
+  border-bottom: none;
+}
+
+.param-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.param-value {
+  font-size: 28rpx;
+  color: #666;
+  padding: 10rpx 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+}
+
+/* 按钮区域 */
+.button-section {
+  margin-bottom: 30rpx;
+}
+
+.test-btn {
+  margin-bottom: 20rpx;
+  font-size: 30rpx;
+}
+
+.test-btn.primary {
+  background-color: #07c160;
+  color: #fff;
+}
+
+.test-btn.secondary {
+  background-color: #576b95;
+  color: #fff;
+}
+
+/* 加载状态 */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #e0e0e0;
+  border-top-color: #07c160;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 错误信息 */
+.error-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  border-left: 8rpx solid #ff4d4f;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.error-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff4d4f;
+  margin-bottom: 16rpx;
+}
+
+.error-code {
+  display: block;
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.error-message {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 结果区域 */
+.result-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.result-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #07c160;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.generated-image {
+  width: 100%;
+  height: 600rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  background-color: #f5f5f5;
+}
+
+/* 优化后的提示词 */
+.revised-prompt-section {
+  background-color: #f0f9ff;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.revised-label {
+  display: block;
+  font-size: 26rpx;
+  color: #1890ff;
+  margin-bottom: 8rpx;
+}
+
+.revised-text {
+  display: block;
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* URL区域 */
+.url-section {
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  padding: 20rpx;
+}
+
+.url-label {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.url-text {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  word-break: break-all;
+  margin-bottom: 16rpx;
+}
+
+.copy-btn {
+  font-size: 26rpx;
+  background-color: #07c160;
+  color: #fff;
+}
+
+/* 返回按钮 */
+.back-section {
+  margin-top: 40rpx;
+}
+
+.back-btn {
+  background-color: #999;
+  color: #fff;
+}

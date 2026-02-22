@@ -1,0 +1,9 @@
+{
+  "name": "deleteUser",
+  "version": "1.0.0",
+  "description": "用户注销云函数 - 删除用户所有相关数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

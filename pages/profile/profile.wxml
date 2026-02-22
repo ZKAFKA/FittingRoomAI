@@ -17,17 +17,17 @@
       <view class="profile-content">
         <view class="profile-item">
           <view class="profile-label">{{langData.profile.height || 'HEIGHT'}}</view>
-          <view class="profile-value">{{userInfo.height || '173'}}<text class="unit">cm</text></view>
+          <view class="profile-value">{{userInfo.height || '--'}}<text class="unit" wx:if="{{userInfo.height}}">cm</text></view>
         </view>
         <view class="profile-divider"></view>
         <view class="profile-item">
           <view class="profile-label">{{langData.profile.weight || 'WEIGHT'}}</view>
-          <view class="profile-value">{{userInfo.weight || '60'}}<text class="unit">kg</text></view>
+          <view class="profile-value">{{userInfo.weight || '--'}}<text class="unit" wx:if="{{userInfo.weight}}">kg</text></view>
         </view>
         <view class="profile-divider"></view>
         <view class="profile-item">
           <view class="profile-label">{{langData.profile.gender || 'GENDER'}}</view>
-          <view class="profile-value">{{userInfo.gender || 'Female'}}</view>
+          <view class="profile-value">{{userInfo.gender || '--'}}</view>
         </view>
       </view>
     </view>
@@ -77,6 +77,15 @@
             <image class="menu-icon-img" src="/assets/icons/contact.png" mode="aspectFit"></image>
           </view>
           <text class="menu-label">{{langData.profile.about || '关于我们'}}</text>
+        </view>
+        <image class="menu-chevron" src="/assets/icons/arrow.png" mode="aspectFit"></image>
+      </view>
+      <view class="menu-item" bindtap="navigateToTestHunyuan">
+        <view class="menu-item-left">
+          <view class="menu-icon-bg" style="background-color: #ff6b6b;">
+            <image class="menu-icon-img" src="/assets/icons/test.png" mode="aspectFit"></image>
+          </view>
+          <text class="menu-label">混元生图测试</text>
         </view>
         <image class="menu-chevron" src="/assets/icons/arrow.png" mode="aspectFit"></image>
       </view>

@@ -28,6 +28,8 @@ Page({
     toastMessage: '',
     // 性别选择弹窗
     showGenderModal: false,
+    // 注销确认弹窗
+    showLogoutModal: false,
     // 是否是主动保存
     isActiveSave: false,
     // 编辑状态
@@ -47,8 +49,8 @@ Page({
     await this.getAvatarUrl();
     // 加载用户信息
     await this.loadUserInfo();
-    // 同步微信昵称
-    this.syncWechatNickName();
+    // 注意：不再自动调用 syncWechatNickName，因为 wx.getUserProfile 必须由用户点击触发
+    // 用户昵称已在登录时通过云函数保存到数据库
   },
 
   /**
@@ -609,78 +611,97 @@ Page({
   },
 
   /**
-   * 同步微信昵称
-   */
-  syncWechatNickName() {
-    // 获取微信用户信息，同步昵称
-    wx.getUserProfile({
-      desc: '用于同步微信昵称',
-      success: (res) => {
-        const wechatNickName = res.userInfo.nickName;
-        const wechatAvatarUrl = res.userInfo.avatarUrl;
-        
-        console.log('同步微信昵称:', wechatNickName);
-        console.log('同步微信头像:', wechatAvatarUrl);
-        
-        // 更新用户信息
-        this.setData({
-          'userInfo.nickName': wechatNickName,
-          'userInfo.avatarUrl': wechatAvatarUrl,
-          'userInfo.avatarFileID': wechatAvatarUrl
-        });
-        
-        // 保存到数据库
-        this.saveWechatInfo(wechatNickName, wechatAvatarUrl);
-      },
-      fail: (error) => {
-        console.error('获取微信用户信息失败:', error);
-      }
-    });
-  },
-
-  /**
-   * 保存微信信息到数据库
-   */
-  async saveWechatInfo(nickName, avatarUrl) {
-    try {
-      const openid = wx.getStorageSync('openid');
-      if (!openid) {
-        return;
-      }
-      
-      const db = wx.cloud.database();
-      const userCollection = db.collection('users');
-      
-      // 查询用户信息
-      const userRes = await userCollection.where({ openid }).get();
-      
-      const now = new Date();
-      const updateData = {
-        nickName: nickName,
-        avatarUrl: avatarUrl,
-        updateTime: now
-      };
-      
-      if (userRes.data.length > 0) {
-        // 更新用户信息
-        await userCollection.doc(userRes.data[0]._id).update({ data: updateData });
-      } else {
-        // 添加用户信息
-        await userCollection.add({ data: { openid, ...updateData, createTime: now } });
-      }
-      
-      console.log('微信信息保存成功');
-    } catch (error) {
-      console.error('保存微信信息失败:', error);
-    }
-  },
-
-  /**
    * 返回上一页
    */
   navigateBack() {
     wx.navigateBack({
       delta: 1
     });
+  },
+
+  /**
+   * 显示头像不支持修改的提示
+   */
+  showAvatarNotSupported() {
+    wx.showModal({
+      title: '提示',
+      content: '根据相关规定，微信小程序暂不支持修改用户头像',
+      showCancel: false,
+      confirmText: '知道了'
+    });
+  },
+
+  /**
+   * 显示用户名不支持修改的提示
+   */
+  showNicknameNotSupported() {
+    wx.showModal({
+      title: '提示',
+      content: '根据相关规定，微信小程序暂不支持修改用户名',
+      showCancel: false,
+      confirmText: '知道了'
+    });
+  },
+
+  /**
+   * 显示注销确认弹窗
+   */
+  showLogoutConfirm() {
+    this.setData({
+      showLogoutModal: true
+    });
+  },
+
+  /**
+   * 隐藏注销确认弹窗
+   */
+  hideLogoutModal() {
+    this.setData({
+      showLogoutModal: false
+    });
+  },
+
+  /**
+   * 确认注销账户
+   */
+  async confirmLogout() {
+    try {
+      wx.showLoading({ title: '注销中...' });
+      
+      const openid = wx.getStorageSync('openid');
+      if (!openid) {
+        wx.hideLoading();
+        this.showToast('未登录或登录已过期');
+        return;
+      }
+      
+      // 调用云函数删除用户数据
+      const result = await wx.cloud.callFunction({
+        name: 'deleteUser',
+        data: {}
+      });
+      
+      console.log('注销结果:', result);
+      
+      if (result.result && result.result.success) {
+        // 清除本地存储
+        wx.clearStorageSync();
+        
+        wx.hideLoading();
+        
+        // 跳转到profile页面
+        wx.redirectTo({
+          url: '/pages/profile/profile'
+        });
+      } else {
+        wx.hideLoading();
+        const errorMsg = result.result && result.result.error ? result.result.error : '注销失败';
+        this.showToast(errorMsg);
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error('注销失败:', error);
+      this.showToast('注销失败，请稍后重试');
+    }
   }
 });

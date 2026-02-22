@@ -158,8 +158,7 @@ Page({
 
         this.setData({
           userInfo: {
-            nickName: userData.nickName || 'Elena Vance',
-            handle: userData.handle || 'elena_fitting_ai',
+            nickName: userData.nickName || '微信用户',
             avatarUrl: (userData.avatarUrl && userData.avatarUrl.indexOf('/assets/images/') === -1) ? userData.avatarUrl : '',
             openid,
             height,
@@ -228,6 +227,18 @@ Page({
     try {
       await this.checkLogin();
       wx.navigateTo({ url: '/pages/about/about' });
+    } catch (error) {
+      console.log('用户未登录，取消跳转');
+    }
+  },
+
+  /**
+   * 页面跳转 - 混元生图测试
+   */
+  async navigateToTestHunyuan() {
+    try {
+      await this.checkLogin();
+      wx.navigateTo({ url: '/pages/test-hunyuan/test-hunyuan' });
     } catch (error) {
       console.log('用户未登录，取消跳转');
     }

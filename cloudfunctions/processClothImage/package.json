@@ -1,0 +1,10 @@
+{
+  "name": "processClothImage",
+  "version": "1.0.0",
+  "description": "衣物图片处理云函数 - 调用混元3.0生图API处理衣物图片",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "axios": "^1.6.0"
+  }
+}

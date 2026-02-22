@@ -1,0 +1,140 @@
+<!-- 测试混元生图云函数页面 -->
+<view class="container">
+  <view class="header">
+    <text class="title">混元生图3.0测试</text>
+  </view>
+
+  <!-- 提示词输入 -->
+  <view class="input-section">
+    <text class="label">提示词 (Prompt)</text>
+    <textarea
+      class="prompt-input"
+      placeholder="请输入提示词，例如：一只可爱的猫咪在阳光下玩耍"
+      value="{{prompt}}"
+      bindinput="onPromptInput"
+      maxlength="500"
+    />
+  </view>
+
+  <!-- 垫图功能 -->
+  <view class="reference-image-section">
+    <view class="section-header">
+      <text class="label">垫图 (可选)</text>
+      <text class="hint">上传参考图片进行垫图生图</text>
+    </view>
+
+    <view class="upload-area" wx:if="{{!referenceImage}}">
+      <view class="upload-btn" bindtap="chooseReferenceImage">
+        <text class="upload-icon">+</text>
+        <text class="upload-text">点击上传图片</text>
+      </view>
+    </view>
+
+    <view class="reference-preview" wx:if="{{referenceImage}}">
+      <image
+        class="reference-img"
+        src="{{referenceImage}}"
+        mode="aspectFit"
+        bindtap="previewReferenceImage"
+      />
+      <view class="reference-actions">
+        <text class="reference-tag">已选择垫图</text>
+        <text class="clear-btn" bindtap="clearReferenceImage">清除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 参数设置 -->
+  <view class="params-section">
+    <view class="section-header" bindtap="toggleParams">
+      <text class="label">高级参数设置</text>
+      <text class="toggle-icon">{{showParams ? '▼' : '▶'}}</text>
+    </view>
+
+    <view class="params-content" wx:if="{{showParams}}">
+      <!-- 分辨率 -->
+      <view class="param-item">
+        <text class="param-label">分辨率</text>
+        <picker mode="selector" range="{{['768:1024 (3:4)', '1024:768 (4:3)', '1024:1024 (1:1)', '720:1280 (9:16)', '1280:720 (16:9)']}}" bindchange="onResolutionChange">
+          <view class="param-value">{{resolution}}</view>
+        </picker>
+      </view>
+
+      <!-- Prompt优化 -->
+      <view class="param-item">
+        <text class="param-label">Prompt优化</text>
+        <switch checked="{{revise === 1}}" bindchange="onReviseChange" />
+      </view>
+
+      <!-- 深度思考 -->
+      <view class="param-item">
+        <text class="param-label">深度思考</text>
+        <switch checked="{{enableThinking}}" bindchange="onEnableThinkingChange" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 测试按钮 -->
+  <view class="button-section">
+    <button
+      class="test-btn primary"
+      bindtap="testGenerateImage"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      测试 generateImage-qyBGo1
+    </button>
+    <button
+      class="test-btn secondary"
+      bindtap="testHunyuanGenerateImage"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      测试 hunyuanGenerateImage
+    </button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-section" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在生成图片，请稍候...</text>
+  </view>
+
+  <!-- 错误信息 -->
+  <view class="error-section" wx:if="{{error}}">
+    <text class="error-title">生成失败</text>
+    <text class="error-code">错误码: {{error.code}}</text>
+    <text class="error-message">{{error.message}}</text>
+  </view>
+
+  <!-- 生成结果 -->
+  <view class="result-section" wx:if="{{imageUrl}}">
+    <text class="result-title">生成成功!</text>
+
+    <!-- 生成的图片 -->
+    <image
+      class="generated-image"
+      src="{{imageUrl}}"
+      mode="aspectFit"
+      bindtap="previewImage"
+    />
+
+    <!-- 优化后的提示词 -->
+    <view class="revised-prompt-section" wx:if="{{revisedPrompt}}">
+      <text class="revised-label">优化后的提示词:</text>
+      <text class="revised-text">{{revisedPrompt}}</text>
+    </view>
+
+    <!-- 图片URL -->
+    <view class="url-section">
+      <text class="url-label">图片URL (24小时有效):</text>
+      <text class="url-text" selectable>{{imageUrl}}</text>
+      <button class="copy-btn" bindtap="copyImageUrl">复制URL</button>
+    </view>
+  </view>
+
+  <!-- 返回按钮 -->
+  <view class="back-section">
+    <button class="back-btn" bindtap="goBack">返回</button>
+  </view>
+</view>

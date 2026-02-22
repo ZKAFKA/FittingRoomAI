@@ -34,6 +34,8 @@ Page({
     aiProcessing: false,
     aiProcessed: false,
     previewAreaStyle: '',
+    // 生图任务相关
+    clothTag: '',
     // 语言相关状态
     i18n: i18n,
     langData: i18n.getLangData()
@@ -58,7 +60,8 @@ Page({
           tagList: [],
           aiProcessing: false,
           aiProcessed: false,
-          previewAreaStyle: ''
+          previewAreaStyle: '',
+          clothTag: ''
         });
       }, 100);
     }
@@ -98,8 +101,6 @@ Page({
     this.loadClothes();
   },
 
-
-
   async loadClothes(refresh = false) {
     try {
       if (refresh) {
@@ -110,28 +111,57 @@ Page({
       
       this.setData({ loading: true, error: null });
       
-      // 添加模拟数据（包含标签信息）
-      const mockClothes = [
-        { _id: 'mock-1', name: '白色T恤', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['白色', '纯棉', '休闲', '夏季'] },
-        { _id: 'mock-2', name: '蓝色牛仔裤', category: 'lower', categoryName: '下装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['蓝色', '牛仔', '直筒', '百搭'] },
-        { _id: 'mock-3', name: '黑色外套', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['黑色', '防风', '春秋', '通勤'] },
-        { _id: 'mock-4', name: '红色裙子', category: 'lower', categoryName: '下装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['红色', '修身', '夏季', '约会'] },
-        { _id: 'mock-5', name: '商务套装', category: 'suit', categoryName: '套装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['黑色', '商务', '正式', '职业'] },
-        { _id: 'mock-6', name: '运动鞋', category: 'shoes', categoryName: '鞋帽', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['白色', '舒适', '运动', '休闲'] },
-        { _id: 'mock-7', name: '项链', category: 'accessories', categoryName: '饰品', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['金色', '简约', '百搭', '饰品'] },
-        { _id: 'mock-8', name: '夹克', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['棕色', '皮夹克', '春秋', '时尚'] }
-      ];
+      // 从数据库加载真实数据
+      const openid = wx.getStorageSync('openid');
+      let clothesData = [];
       
-      let newClothes = mockClothes;
+      if (openid) {
+        try {
+          const wardrobeRes = await wx.cloud.database().collection('wardrobe')
+            .where({
+              openid,
+              status: 'active'
+            })
+            .orderBy('createTime', 'desc')
+            .get();
+          
+          clothesData = wardrobeRes.data.map(item => ({
+            _id: item._id,
+            name: item.name || '未命名',
+            category: item.category,
+            categoryName: this.getCategoryName(item.category),
+            imageUrl: item.imageUrl,
+            status: item.status,
+            createTime: item.createTime,
+            tags: item.tags || []
+          }));
+        } catch (dbError) {
+          console.error('从数据库加载衣物失败:', dbError);
+        }
+      }
+      
+      // 如果没有数据，使用模拟数据
+      if (clothesData.length === 0) {
+        clothesData = [
+          { _id: 'mock-1', name: '白色T恤', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['白色', '纯棉', '休闲', '夏季'] },
+          { _id: 'mock-2', name: '蓝色牛仔裤', category: 'lower', categoryName: '下装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['蓝色', '牛仔', '直筒', '百搭'] },
+          { _id: 'mock-3', name: '黑色外套', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['黑色', '防风', '春秋', '通勤'] },
+          { _id: 'mock-4', name: '红色裙子', category: 'lower', categoryName: '下装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['红色', '修身', '夏季', '约会'] },
+          { _id: 'mock-5', name: '商务套装', category: 'suit', categoryName: '套装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['黑色', '商务', '正式', '职业'] },
+          { _id: 'mock-6', name: '运动鞋', category: 'shoes', categoryName: '鞋帽', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['白色', '舒适', '运动', '休闲'] },
+          { _id: 'mock-7', name: '项链', category: 'accessories', categoryName: '饰品', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['金色', '简约', '百搭', '饰品'] },
+          { _id: 'mock-8', name: '夹克', category: 'upper', categoryName: '上装', imageUrl: '/test/unnamed.png', status: 'active', createTime: new Date(), tags: ['棕色', '皮夹克', '春秋', '时尚'] }
+        ];
+      }
       
       if (refresh) {
-        this.setData({ clothes: newClothes });
+        this.setData({ clothes: clothesData });
       } else {
-        this.setData({ clothes: [...this.data.clothes, ...newClothes] });
+        this.setData({ clothes: [...this.data.clothes, ...clothesData] });
       }
       
       this.setData({ 
-        hasMore: false, // 模拟数据不需要分页
+        hasMore: false,
         page: 2
       });
       
@@ -218,8 +248,15 @@ Page({
   },
 
   getCategoryName(categoryId) {
-    const category = this.data.categories.find(cat => cat.id === categoryId);
-    return category ? category.name : '全部';
+    const categoryMap = {
+      'all': '全部',
+      'upper': '上装',
+      'lower': '下装',
+      'suit': '套装',
+      'shoes': '鞋帽',
+      'accessories': '饰品'
+    };
+    return categoryMap[categoryId] || '全部';
   },
 
   async deleteCloth(e) {
@@ -253,8 +290,6 @@ Page({
       this.loadClothes();
     }
   },
-
-
 
   refreshPage() {
     this.setData({
@@ -295,8 +330,6 @@ Page({
   doSearch() {
     // 执行搜索逻辑
     this.filterClothes();
-    // 可以选择是否关闭搜索栏
-    // this.setData({ showSearch: false });
   },
 
   /**
@@ -318,12 +351,16 @@ Page({
       tagList: [],
       aiProcessing: false,
       aiProcessed: false,
-      previewAreaStyle: ''
+      previewAreaStyle: '',
+      clothTag: ''
     });
   },
 
   hideAddModal() {
-    this.setData({ showAddClothModal: false });
+    this.setData({ 
+      showAddClothModal: false,
+      clothTag: ''
+    });
   },
 
   preventMove() {
@@ -380,7 +417,8 @@ Page({
             this.setData({
               newClothImage: tempFilePath,
               aiProcessed: false,
-              previewAreaStyle: previewAreaStyle
+              previewAreaStyle: previewAreaStyle,
+              clothTag: ''
             });
           },
           fail: (error) => {
@@ -389,7 +427,8 @@ Page({
             this.setData({
               newClothImage: tempFilePath,
               aiProcessed: false,
-              previewAreaStyle: 'width: 100%; max-height: 400rpx;'
+              previewAreaStyle: 'width: 100%; max-height: 400rpx;',
+              clothTag: ''
             });
           }
         });
@@ -401,6 +440,48 @@ Page({
   selectNewCategory(e) {
     const category = e.currentTarget.dataset.category;
     this.setData({ newClothCategory: category });
+    
+    // 自动生成衣物标签
+    this.generateClothTag(category);
+  },
+
+  /**
+   * 生成衣物标签
+   * @param {string} category - 衣物分类
+   */
+  async generateClothTag(category) {
+    try {
+      const openid = wx.getStorageSync('openid');
+      if (!openid) return;
+      
+      // 查询该分类下已有衣物数量
+      const countRes = await wx.cloud.database().collection('wardrobe')
+        .where({
+          openid,
+          category,
+          status: 'active'
+        })
+        .count();
+      
+      const count = countRes.total || 0;
+      const categoryMap = {
+        'upper': '上装',
+        'lower': '下装',
+        'suit': '套装',
+        'shoes': '鞋帽',
+        'accessories': '饰品'
+      };
+      
+      const categoryName = categoryMap[category] || '衣物';
+      const clothTag = `${categoryName}${count + 1}`;
+      
+      this.setData({
+        clothTag: clothTag,
+        newClothTags: clothTag
+      });
+    } catch (error) {
+      console.error('生成衣物标签失败:', error);
+    }
   },
 
   // 标签输入
@@ -408,8 +489,44 @@ Page({
     const tags = e.detail.value;
     this.setData({ newClothTags: tags });
     // 生成标签列表
-    const tagList = tags.split(' ').filter(tag => tag.trim() !== '');
+    const tagList = tags.split(/[\s,，]+/).filter(tag => tag.trim() !== '');
     this.setData({ tagList });
+  },
+
+  /**
+   * 构建混元生图Prompt
+   * @param {string} category - 衣物分类
+   * @returns {string} 优化后的prompt
+   */
+  buildHunyuanPrompt(category) {
+    const categoryMap = {
+      'upper': { name: '上装', en: 'top clothing' },
+      'lower': { name: '下装', en: 'bottom clothing' },
+      'suit': { name: '套装', en: 'suit' },
+      'shoes': { name: '鞋帽', en: 'shoes or hat' },
+      'accessories': { name: '饰品', en: 'accessory' }
+    };
+    
+    const categoryInfo = categoryMap[category] || { name: '衣物', en: 'clothing' };
+    
+    // 构建专业prompt，确保生成3:4比例、白色背景、摊开展示的衣物图片
+    const prompt = `Professional clothing product photography of ${categoryInfo.en}. 
+
+Requirements:
+1. Remove all background and replace with pure white background (#FFFFFF)
+2. Display the ${categoryInfo.en} in a fully spread out, flat lay style
+3. Show the garment laid flat from a top-down perspective
+4. Ensure the clothing item is centered and occupies 80-90% of the frame
+5. Maintain natural fabric texture, folds, and details
+6. Use soft, even lighting without harsh shadows
+7. Aspect ratio: 3:4 (portrait orientation)
+8. High resolution, professional e-commerce quality
+9. No models, mannequins, or additional props
+10. Clean edges, no background artifacts
+
+Style: Clean, minimal, professional product photography suitable for e-commerce catalog.`;
+
+    return prompt;
   },
 
   // 确认上传
@@ -436,15 +553,39 @@ Page({
     this.setData({ aiProcessing: true });
 
     try {
-      // 1. 图片处理阶段：调用 removeBackground 云函数获取原始图片并进行背景移除处理
-      const backgroundRemovalResult = await this.removeBackgroundFromImage();
-      if (!backgroundRemovalResult.success) {
-        throw new Error(backgroundRemovalResult.error || '背景移除失败');
+      // 构建prompt
+      const prompt = this.buildHunyuanPrompt(this.data.newClothCategory);
+
+      console.log('调用 generateImage-qyBGo1 云函数');
+      console.log('Prompt:', prompt);
+
+      // 调用腾讯官方混元生图云函数
+      // 使用官方标准格式，只传递 prompt 参数
+      const result = await wx.cloud.callFunction({
+        name: 'generateImage-qyBGo1',
+        data: {
+          prompt: prompt
+        }
+      });
+
+      console.log('generateImage-qyBGo1 返回结果:', result);
+
+      const resData = result.result;
+
+      // 检查是否成功
+      if (!resData.success) {
+        const errorMsg = resData.message || resData.code || '图片生成失败';
+        throw new Error(errorMsg);
       }
 
-      // 2. 结果回显阶段：更新 UI 显示生成的图片
+      // 检查是否有图片URL
+      if (!resData.imageUrl) {
+        throw new Error('生成的图片URL为空');
+      }
+
+      // 处理成功，更新UI
       this.setData({
-        newClothImage: backgroundRemovalResult.imageUrl,
+        newClothImage: resData.imageUrl,
         aiProcessing: false,
         aiProcessed: true
       });
@@ -453,17 +594,43 @@ Page({
         title: '处理完成',
         icon: 'success'
       });
+
     } catch (error) {
       console.error('AI 处理失败:', error);
+      console.error('错误详情:', JSON.stringify(error));
       this.setData({ aiProcessing: false });
-      wx.showToast({
-        title: '处理失败，请重试',
-        icon: 'none'
+      
+      // 详细的错误提示
+      let errorMsg = '处理失败，请重试';
+      
+      // 处理不同类型的错误
+      if (error.message) {
+        errorMsg = error.message;
+        
+        // 403 错误 - 权限问题
+        if (error.message.includes('403') || error.message.includes('Forbidden')) {
+          errorMsg = '服务权限错误(403)，请检查：1.云函数是否已部署 2.混元生图服务是否已开通 3.额度是否充足';
+        }
+        // 云函数未找到
+        else if (error.message.includes('not found')) {
+          errorMsg = '云函数未部署，请在微信开发者工具中右键云函数并选择"创建并部署：云端安装依赖"';
+        }
+        // 网络错误
+        else if (error.message.includes('network') || error.message.includes('timeout')) {
+          errorMsg = '网络连接失败，请检查网络后重试';
+        }
+      }
+      
+      wx.showModal({
+        title: '生成失败',
+        content: errorMsg,
+        showCancel: false,
+        confirmText: '确定'
       });
     }
   },
 
-  // 加入衣橱
+  // 保存到衣橱
   async addToWardrobe() {
     const openid = wx.getStorageSync('openid');
     if (!openid) {
@@ -475,28 +642,24 @@ Page({
     }
 
     try {
-      // 上传图片到云存储
-      const timestamp = Date.now();
-      const cloudPath = `wardrobe/${openid}/${timestamp}.png`;
+      wx.showLoading({ title: '保存中...' });
       
-      const uploadResult = await wx.cloud.uploadFile({
-        cloudPath,
-        filePath: this.data.newClothImage
+      // 调用 saveClothImage 云函数保存衣物
+      const saveResult = await wx.cloud.callFunction({
+        name: 'saveClothImage',
+        data: {
+          imageUrl: this.data.newClothImage,
+          category: this.data.newClothCategory,
+          tags: this.data.tagList,
+          clothTag: this.data.clothTag
+        }
       });
+      
+      console.log('保存衣物结果:', saveResult);
 
-      // 保存到数据库
-      const clothData = {
-        openid,
-        category: this.data.newClothCategory,
-        imageUrl: uploadResult.fileID,
-        tags: this.data.tagList,
-        createTime: new Date(),
-        status: 'active'
-      };
-
-      await wx.cloud.database().collection('wardrobe').add({
-        data: clothData
-      });
+      if (!saveResult.result || !saveResult.result.success) {
+        throw new Error(saveResult.result?.error || '保存失败');
+      }
 
       // 关闭弹窗
       this.hideAddModal();
@@ -508,121 +671,33 @@ Page({
       if (this.eventChannel) {
         this.eventChannel.emit('clothAdded', {
           success: true,
-          cloth: clothData
+          cloth: saveResult.result
         });
       }
 
       wx.showToast({
-        title: '加入衣橱成功',
+        title: '保存成功',
         icon: 'success'
       });
     } catch (error) {
-      console.error('加入衣橱失败:', error);
+      console.error('保存失败:', error);
+      wx.hideLoading();
       wx.showToast({
-        title: '加入失败，请重试',
+        title: error.message || '保存失败，请重试',
         icon: 'none'
       });
-      
-      // 通知其他页面上传失败
-      if (this.eventChannel) {
-        this.eventChannel.emit('clothAdded', {
-          success: false,
-          error: error.message
-        });
-      }
     }
   },
 
-  // 辅助函数：移除图片背景
-  async removeBackgroundFromImage() {
-    try {
-      console.log('开始移除背景，图片URL:', this.data.newClothImage);
-      console.log('衣物类型:', this.data.newClothCategory);
-      
-      // 调用 removeBackground 云函数
-      const result = await wx.cloud.callFunction({
-        name: 'removeBackground',
-        data: {
-          imageUrl: this.data.newClothImage,
-          category: this.data.newClothCategory
-        }
-      });
-
-      console.log('背景移除云函数返回结果:', result);
-
-      if (result.result && result.result.success) {
-        return {
-          success: true,
-          imageUrl: result.result.imageUrl
-        };
-      } else {
-        console.error('背景移除失败，返回结果:', result.result);
-        return {
-          success: false,
-          error: result.result?.error || '背景移除失败'
-        };
-      }
-    } catch (error) {
-      console.error('背景移除失败:', error);
-      console.error('错误详情:', error.stack);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
+  // 重新上传
+  reuploadImage() {
+    this.setData({
+      newClothImage: '',
+      aiProcessed: false,
+      previewAreaStyle: '',
+      clothTag: '',
+      newClothTags: '',
+      tagList: []
+    });
   },
-
-  // 辅助函数：构造衣物处理的 prompt
-  constructClothPrompt() {
-    // 衣物类型映射
-    const categoryMap = {
-      upper: {
-        name: 'top clothing',
-        description: 'shirt, blouse, sweater, jacket, coat, hoodie, etc.'
-      },
-      inner: {
-        name: 'inner wear',
-        description: 'undershirt, tank top, lingerie, etc.'
-      },
-      lower: {
-        name: 'bottom clothing',
-        description: 'pants, jeans, skirt, shorts, leggings, etc.'
-      },
-      suit: {
-        name: 'suit',
-        description: 'formal suit, business suit, etc.'
-      },
-      shoes: {
-        name: 'shoes',
-        description: 'sneakers, boots, sandals, heels, flats, etc.'
-      },
-      accessories: {
-        name: 'accessories',
-        description: 'hat, scarf, gloves, bag, belt, sunglasses, etc.'
-      }
-    };
-
-    const categoryInfo = categoryMap[this.data.newClothCategory] || {
-      name: 'clothing',
-      description: 'clothing item'
-    };
-
-    // 预设模板
-    const promptTemplate = `Remove background from this {{categoryName}} and make it white background. Focus only on the {{categoryName}} item. Create a clean, professional product image of the {{categoryName}}. The image should show the {{categoryName}} clearly with proper lighting and shadows.`;
-
-    // 替换模板变量
-    let prompt = promptTemplate
-      .replace(/{{categoryName}}/g, categoryInfo.name)
-      .replace(/{{categoryDescription}}/g, categoryInfo.description);
-
-    // 添加标签信息（如果有）
-    if (this.data.tagList.length > 0) {
-      const tags = this.data.tagList.join(', ');
-      prompt += ` Clothing tags: ${tags}.`;
-    }
-
-    return prompt;
-  },
-
-
 });
